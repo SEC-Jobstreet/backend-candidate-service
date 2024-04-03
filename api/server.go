@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/SEC-Jobstreet/backend-application-service/api/handlers"
 	"net/http"
 
@@ -48,7 +49,7 @@ func (server *Server) Start(ctx context.Context, waitGroup *errgroup.Group, addr
 			if errors.Is(err, http.ErrServerClosed) {
 				return nil
 			}
-			log.Fatal().Msg("RESTFUL API server failed to serve")
+			log.Fatal().Msg(fmt.Sprintf("RESTFUL API server failed to serve, error = %v", err))
 			return err
 		}
 		return nil
