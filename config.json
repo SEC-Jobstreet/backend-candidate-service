@@ -1,0 +1,14 @@
+{
+    "Environment": "development",
+    "ListenIP": "127.0.0.1",
+    "ListenPort": "4000",
+    "KeyCloak": {
+        "Realm": "jobstreet",
+        "BaseUrl": "http://localhost:8282",
+        "RestApi": {
+            "ClientId": "ApplicationServiceClient",
+            "ClientSecret": "OASCwQp1QAgC9eMu5XxaWptVSeEpKCrO"
+        },
+        "RealmRS256PublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzjuGx8rEk2vNbGitm3gM9cm6nwW9JKjinkzFX9kjHwQMkoA+jyFDIeZi77I1RBpkuVnrns/PDJeDRg/LacPz5V5I3lJRF1+tz8rZOwYMfIYQbMakShvQ0/MtybbkDHGt+MxEwEd84AdSrZfJMrLfBv6P+mKiBHd7mtTwJs2jW52CcB++xbvNkVsJ7yuV9tudlSLJuh0ed6YkjdF6yXPlOKFOECu928CFNirpIty2PKq1rbaVHyPyo/+307RoB1H8jfIGtZUj42tZ9cKlgWkt0vbfVKPjq4vLwN1WHQV8OybsQKBPEhx2x2gF4okwAfrkqzkIUliCVE8p/jdcVNiojwIDAQAB"
+    }
+}

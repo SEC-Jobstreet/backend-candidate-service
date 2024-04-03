@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:13.12
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=application_service_jobstreet
+    ports:
+      - "5432:5432"
+    volumes:
+      - user-management-service-prod-data-volume:/var/lib/postgresql/data
+    networks:
+      - user-management-network
+
+  start_dependencies:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - postgres
+    command: postgres:5432
+    networks:
+      - user-management-network
+
+  application_service:
+    container_name: backend-jobstreet-user-management-service-prod
+    image: backend-jobstreet-user-management-service-prod
+    build:
+      context: .
+      target: production
+    environment:
+      - DB_SOURCE=postgresql://admin:admin@postgres:5432/application_service_jobstreet?sslmode=disable
+    volumes:
+      - .:/app
+    ports:
+      - 4000:4000
+    depends_on:
+      - start_dependencies
+    networks:
+      - user-management-network
+
+networks:
+  user-management-network:
+
+volumes:
+  user-management-service-prod-data-volume:
+
