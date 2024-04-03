@@ -119,10 +119,5 @@ func (s *profileService) CreateProfile(ctx *gin.Context, req models.UserProfileE
 
 	// TODO save into database
 
-	return &models.AppError{
-		Error:   nil,
-		IsError: false,
-		Code:    http.StatusCreated,
-		Message: utils.CREATED_PROFILE_SUCCESSFULLY,
-	}
+	return nil
 }
