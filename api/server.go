@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"github.com/SEC-Jobstreet/backend-candidate-service/api/handlers"
 	"net/http"
 
 	db "github.com/SEC-Jobstreet/backend-candidate-service/db/sqlc"
@@ -14,16 +15,22 @@ import (
 
 // Server serves HTTP requests for our banking service.
 type Server struct {
-	config utils.Config
-	store  db.Store
-	router *gin.Engine
+	config      utils.Config
+	store       db.Store
+	router      *gin.Engine
+	authHandler handlers.AuthHandler
 }
 
 // NewServer creates a new HTTP server and setup routing.
-func NewServer(config utils.Config, store db.Store) (*Server, error) {
+func NewServer(
+	config utils.Config,
+	store db.Store,
+	authHandler handlers.AuthHandler,
+) (*Server, error) {
 	server := &Server{
-		config: config,
-		store:  store,
+		config:      config,
+		store:       store,
+		authHandler: authHandler,
 	}
 
 	server.setupRouter()
