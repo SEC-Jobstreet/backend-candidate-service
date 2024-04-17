@@ -7,12 +7,15 @@ import (
 // Config stores all configuration of the application.
 // The value are read by viper from a config file or environment variables.
 type Config struct {
-	Environment          string `mapstructure:"ENVIRONMENT"`
-	RESTfulServerAddress string `mapstructure:"RESTfulServerAddress"`
-	DBSource             string `mapstructure:"DB_SOURCE"`
-	MigrationURL         string `mapstructure:"MIGRATION_URL"`
-	GRPCServerAddress    string `mapstructure:"GRPCServerAddress"`
-	HTTPServerAddress    string `mapstructure:"HTTPServerAddress"`
+	Environment             string `mapstructure:"ENVIRONMENT"`
+	RESTfulServerAddress    string `mapstructure:"RESTfulServerAddress"`
+	DBSource                string `mapstructure:"DB_SOURCE"`
+	MigrationURL            string `mapstructure:"MIGRATION_URL"`
+	GRPCServerAddress       string `mapstructure:"GRPCServerAddress"`
+	HTTPServerAddress       string `mapstructure:"HTTPServerAddress"`
+	OAuthGoogleClientId     string `mapstructure:"OAUTH_GOOGLE_CLIENT_ID"`
+	OAuthGoogleClientSecret string `mapstructure:"OAUTH_GOOGLE_CLIENT_SECRET"`
+	OAuthGoogleCallbackUrl  string `mapstructure:"OAUTH_GOOGLE_CALLBACK_URL"`
 }
 
 // LoadConfig reads configuration from file or environment variable.

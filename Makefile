@@ -19,7 +19,7 @@ new_migrate:
 # run postgres container with network 
 run_postgres:
 	-docker network create candidate-network
-	docker run --name postgres --network candidate-network -p 5432:5432 -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=admin -d postgres:13.12 
+	docker run --name postgres --network candidate-network -p 5432:5432 -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=admin -d postgres:16.2
 
 start_postgres:
 	docker start postgres

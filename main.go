@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/SEC-Jobstreet/backend-candidate-service/api/handlers"
+	"github.com/SEC-Jobstreet/backend-candidate-service/api/services"
+	"github.com/SEC-Jobstreet/backend-candidate-service/internals/oauth"
 	"os"
 	"os/signal"
 	"syscall"
@@ -45,8 +48,8 @@ func main() {
 		log.Fatal().Msg("cannot connect to db")
 	}
 
-	runDBMigration(config)
-
+	//runDBMigration(config)
+	runOauthGoogle(config)
 	store := db.NewStore(connPool)
 
 	waitGroup, ctx := errgroup.WithContext(ctx)
@@ -73,7 +76,15 @@ func runDBMigration(config utils.Config) {
 }
 
 func runGinServer(ctx context.Context, waitGroup *errgroup.Group, config utils.Config, store db.Store) {
-	ginServer, err := api.NewServer(config, store)
+	// repos
+
+	// services
+	authService := services.NewAuthService()
+
+	// handlers
+	authHandler := handlers.NewAuthHandler(authService)
+
+	ginServer, err := api.NewServer(config, store, authHandler)
 	if err != nil {
 		log.Fatal().Msg("cannot create server")
 	}
@@ -82,4 +93,9 @@ func runGinServer(ctx context.Context, waitGroup *errgroup.Group, config utils.C
 	if err != nil {
 		log.Fatal().Msg("cannot start server")
 	}
+}
+
+func runOauthGoogle(config utils.Config) {
+	oauthGoogleService := oauth.NewOAuthGoogleService()
+	oauthGoogleService.NewGoogleOAuth(config)
 }

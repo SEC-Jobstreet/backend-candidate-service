@@ -29,5 +29,17 @@ func (s *Server) setupRouter() {
 
 	authRoutes.POST("/apply_job", s.example)
 
+	// Oauth
+	apiOauthGoogle := router.Group("/oauth")
+	{
+		apiOauthGoogle.GET("/:provider/callback", s.authHandler.HandleGoogleCallback)
+		apiOauthGoogle.GET("/:provider", s.authHandler.HandleAuthGoogle)
+	}
+
+	apiHome := router.Group("/test")
+	{
+		apiHome.GET("/apply_job", middleware.OAuthMiddleware(s.config), s.example)
+	}
+
 	s.router = router
 }

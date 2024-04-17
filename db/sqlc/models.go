@@ -6,14 +6,32 @@ package db
 
 import (
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Application struct {
-	ID          int64     `json:"id"`
-	CandidateID int64     `json:"candidate_id"`
-	JobID       int64     `json:"job_id"`
-	Status      string    `json:"status"`
-	Message     string    `json:"message"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	CreatedAt   time.Time `json:"created_at"`
+type CandidateProfile struct {
+	UserID           int64         `json:"user_id"`
+	GoogleID         pgtype.Int8   `json:"google_id"`
+	Email            string        `json:"email"`
+	FirstName        pgtype.Text   `json:"first_name"`
+	LastName         pgtype.Text   `json:"last_name"`
+	ProfileImage     pgtype.Text   `json:"profile_image"`
+	FirstNameProfile pgtype.Text   `json:"first_name_profile"`
+	LastNameProfile  pgtype.Text   `json:"last_name_profile"`
+	Phone            pgtype.Text   `json:"phone"`
+	Address          pgtype.Text   `json:"address"`
+	LocationLat      pgtype.Float8 `json:"location_lat"`
+	LocationLon      pgtype.Float8 `json:"location_lon"`
+	Visa             pgtype.Bool   `json:"visa"`
+	Description      pgtype.Text   `json:"description"`
+	Position         pgtype.Text   `json:"position"`
+	StartDate        pgtype.Date   `json:"start_date"`
+	WorkWhenever     pgtype.Bool   `json:"work_whenever"`
+	WorkShift        pgtype.Text   `json:"work_shift"`
+	ShareProfile     pgtype.Bool   `json:"share_profile"`
+	ResumeLink       pgtype.Text   `json:"resume_link"`
+	UpdatedAt        time.Time     `json:"updated_at"`
+	CreatedAt        time.Time     `json:"created_at"`
+	AuthMethod       pgtype.Text   `json:"auth_method"`
 }

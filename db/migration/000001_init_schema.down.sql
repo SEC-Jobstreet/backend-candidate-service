@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS application;
+DROP TABLE IF EXISTS candidate_profile;
