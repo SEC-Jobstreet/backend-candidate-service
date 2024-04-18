@@ -2,11 +2,12 @@ package middleware
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/SEC-Jobstreet/backend-candidate-service/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/markbates/goth/providers/google"
 	"golang.org/x/oauth2"
-	"net/http"
 )
 
 func initOAuth2Config(config utils.Config) *oauth2.Config {
@@ -22,23 +23,31 @@ func initOAuth2Config(config utils.Config) *oauth2.Config {
 func OAuthMiddleware(config utils.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		oauth2Config := initOAuth2Config(config)
-		token, err := ctx.Cookie("auth-token")
+		// cai nay k hỉu
+		// lấy access_token sau đó verify thử ok k. nếu hết hạn thì lấy lại access_token từ refresh_token.
+		// nếu hết hạn nữa thì cancel để ng dùng đăng nhập lại.
+		token, err := ctx.Cookie("auth-token") // auth-token là access_token hả
 		if err != nil || token == "" {
 			state := "state"
-			url := oauth2Config.AuthCodeURL(state, oauth2.AccessTypeOffline)
-			ctx.Redirect(http.StatusTemporaryRedirect, url)
+			url := oauth2Config.AuthCodeURL(state, oauth2.AccessTypeOffline) // cần k hay trỏ thẳng đến homepage lun
+			ctx.Redirect(http.StatusMovedPermanently, url)
 			ctx.Abort()
 			return
 		}
 
+		// sao k truyền thêm refresh token nữa
 		tokenSource := oauth2Config.TokenSource(context.Background(), &oauth2.Token{AccessToken: token})
 		newToken, err := tokenSource.Token()
 		if err != nil || newToken == nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to refresh access token"})
+			ctx.Redirect(http.StatusMovedPermanently, config.FrontendURL)
 			return
 		}
 
-		ctx.Set("userToken", newToken) // Set the token in the context for further use
+		// nếu có thay đổi thì phải lưu lại vào cookie các token vừa thay đổi để request sau còn sài nựa
+
+		// đó là suy nghĩ của t thôi m thấy sai thì nhắn t
+
+		// ctx.Set("userToken", newToken) // Set the token in the context for further use
 		ctx.Next()
 	}
 }

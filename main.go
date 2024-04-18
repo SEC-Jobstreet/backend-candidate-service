@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"github.com/SEC-Jobstreet/backend-candidate-service/api/handlers"
-	"github.com/SEC-Jobstreet/backend-candidate-service/api/services"
-	"github.com/SEC-Jobstreet/backend-candidate-service/internals/oauth"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/SEC-Jobstreet/backend-candidate-service/api/handlers"
+	"github.com/SEC-Jobstreet/backend-candidate-service/api/services"
+	"github.com/SEC-Jobstreet/backend-candidate-service/internals/oauth"
 
 	"github.com/SEC-Jobstreet/backend-candidate-service/api"
 	db "github.com/SEC-Jobstreet/backend-candidate-service/db/sqlc"
@@ -82,7 +83,7 @@ func runGinServer(ctx context.Context, waitGroup *errgroup.Group, config utils.C
 	authService := services.NewAuthService()
 
 	// handlers
-	authHandler := handlers.NewAuthHandler(authService)
+	authHandler := handlers.NewAuthHandler(authService, config)
 
 	ginServer, err := api.NewServer(config, store, authHandler)
 	if err != nil {

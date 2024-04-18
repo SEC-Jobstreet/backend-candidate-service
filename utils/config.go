@@ -11,8 +11,7 @@ type Config struct {
 	RESTfulServerAddress    string `mapstructure:"RESTfulServerAddress"`
 	DBSource                string `mapstructure:"DB_SOURCE"`
 	MigrationURL            string `mapstructure:"MIGRATION_URL"`
-	GRPCServerAddress       string `mapstructure:"GRPCServerAddress"`
-	HTTPServerAddress       string `mapstructure:"HTTPServerAddress"`
+	FrontendURL             string `mapstructure:"FRONTEND_URL"`
 	OAuthGoogleClientId     string `mapstructure:"OAUTH_GOOGLE_CLIENT_ID"`
 	OAuthGoogleClientSecret string `mapstructure:"OAUTH_GOOGLE_CLIENT_SECRET"`
 	OAuthGoogleCallbackUrl  string `mapstructure:"OAUTH_GOOGLE_CALLBACK_URL"`
