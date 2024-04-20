@@ -36,12 +36,14 @@ func (h *authHandler) HandleGoogleCallback(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("access_token", response.AccessToken, 0, "/", "", false, false)
-	ctx.SetCookie("refresh_token", response.RefreshToken, 0, "/", "", false, false)
-	ctx.SetCookie("IDToken", response.IDToken, 0, "/", "", false, false)
-	ctx.SetCookie("current-url", "", -1, "/", "", false, true)
+	//ctx.SetCookie("access_token", response.AccessToken, 0, "/", "", false, false)
+	//ctx.SetCookie("refresh_token", response.RefreshToken, 0, "/", "", false, false)
+	//ctx.SetCookie("IDToken", response.IDToken, 0, "/", "", false, false)
+	//ctx.SetCookie("current-url", "", -1, "/", "", false, true)
 
-	ctx.Redirect(http.StatusMovedPermanently, response.CurrentUrl)
+	//ctx.Redirect(http.StatusMovedPermanently, response.CurrentUrl)
+
+	utils.Ok(ctx, response)
 }
 
 func (h *authHandler) HandleAuthGoogle(ctx *gin.Context) {
