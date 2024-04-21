@@ -67,16 +67,16 @@ func OAuthMiddleware(config utils.Config) gin.HandlerFunc {
 		}
 		logrus.Printf("OAuthMiddleware - oauthUserGoogle = %v", utils.LogFull(oauthUserGoogle))
 
-		if oauthUserGoogle.ErrorDescription != "" {
-			logrus.Errorf("OAuthMiddleware - Error description = %v", oauthUserGoogle.ErrorDescription)
-			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Token is invalid")
-			ctx.Abort()
-			return
-		}
+		//if oauthUserGoogle.ErrorDescription != "" {
+		//	logrus.Errorf("OAuthMiddleware - Error description = %v", oauthUserGoogle.ErrorDescription)
+		//	utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Token is invalid")
+		//	ctx.Abort()
+		//	return
+		//}
 
 		// Expired -> get new token
 		expiresIn, _ := strconv.Atoi(oauthUserGoogle.ExpiresIn)
-		if expiresIn <= 0 {
+		if expiresIn <= 0 || oauthUserGoogle.ErrorDescription != "" {
 			logrus.Println("OAuthMiddleware - Token is expired")
 			oauth2Config := initOAuth2Config(config)
 			refreshToken, _ := ctx.Cookie(utils.RefreshToken)
