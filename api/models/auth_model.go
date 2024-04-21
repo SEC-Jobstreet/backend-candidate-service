@@ -42,3 +42,11 @@ type OAuthUserGoogleInfo struct {
 	AccessType       string `json:"access_type,omitempty"`
 	ErrorDescription string `json:"error_description,omitempty"`
 }
+
+type OAuthGoogleAccessTokenResponse struct {
+	AccessToken string `json:"access_token,omitempty"`
+	ExpiresIn   int    `json:"expires_in,omitempty"`
+	Scope       string `json:"scope,omitempty"`
+	TokenType   string `json:"token_type,omitempty"`
+	IdToken     string `json:"id_token,omitempty"`
+}

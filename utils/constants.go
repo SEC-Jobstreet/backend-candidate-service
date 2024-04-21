@@ -12,5 +12,6 @@ const (
 )
 
 const (
-	UrlTokenInfo = "https://www.googleapis.com/oauth2/v3/tokeninfo"
+	UrlTokenInfo        = "https://www.googleapis.com/oauth2/v3/tokeninfo"
+	UrlGetAccessTokenV4 = "https://www.googleapis.com/oauth2/v4/token"
 )
