@@ -52,7 +52,7 @@ func GenerateToken(claim models.AuthClaim, config utils.Config) (string, string,
 	}
 
 	// Gen refresh token
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+	claims["exp"] = time.Now().Add(time.Hour * 240).Unix()
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	refreshTokenRes, errRefreshToken := refreshToken.SignedString([]byte(config.JwtSecretKey))
 	if errRefreshToken != nil {
