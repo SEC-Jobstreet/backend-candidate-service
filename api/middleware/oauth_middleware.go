@@ -28,11 +28,11 @@ func initOAuth2Config(config utils.Config) *oauth2.Config {
 
 func OAuthMiddleware(config utils.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		//accessToken, _ := ctx.Cookie(utils.AccessToken)
+		accessToken, _ := ctx.Cookie(utils.AccessToken)
 		//idToken, _ := ctx.Cookie(utils.IdToken)
 
 		// Validate token
-		url := fmt.Sprintf("%s?access_token=%s", utils.UrlTokenInfo, "ya29.a0Ad52N38xQlLmCfMuyKD6G6NLPqRR-7QJjToEYr-wtsdZZHRMufpVHOAa9mbejJ-E-bMh_qFpcl-I6IBQA-V3cZUkRHQWl19dfCmdtbvPqy45eixjHAinh88AiLR3APZ_Ow2hDG7frH1xdqM3XqQhrFB15rt7usHqD-puaCgYKAX4SARISFQHGX2MiF5QfjBfgmOz-zeUd5Ib0vQ0171")
+		url := fmt.Sprintf("%s?access_token=%s", utils.UrlTokenInfo, accessToken)
 		response, err := http.Get(url)
 		if err != nil {
 			logrus.Errorf("OAuthMiddleware - Error get tokeninfo, error = %v", err)
@@ -52,7 +52,7 @@ func OAuthMiddleware(config utils.Config) gin.HandlerFunc {
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
 			logrus.Errorf("OAuthMiddleware - Error reading body: %v", err)
-			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Token is invalid")
+			utils.ErrorWithMessage(ctx, http.StatusInternalServerError, "Internal Server Error")
 			ctx.Abort()
 			return
 		}
@@ -61,7 +61,7 @@ func OAuthMiddleware(config utils.Config) gin.HandlerFunc {
 		err = json.Unmarshal(body, &oauthUserGoogle)
 		if err != nil {
 			logrus.Errorf("OAuthMiddleware - Error unmarshalling oauthUserGoogle info: %v", err)
-			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Token is invalid")
+			utils.ErrorWithMessage(ctx, http.StatusInternalServerError, "Internal Server Error")
 			ctx.Abort()
 			return
 		}
@@ -69,7 +69,7 @@ func OAuthMiddleware(config utils.Config) gin.HandlerFunc {
 
 		if oauthUserGoogle.ErrorDescription != "" {
 			logrus.Errorf("OAuthMiddleware - Error description = %v", oauthUserGoogle.ErrorDescription)
-			utils.ErrorWithMessage(ctx, http.StatusBadRequest, "Token is invalid")
+			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Token is invalid")
 			ctx.Abort()
 			return
 		}
