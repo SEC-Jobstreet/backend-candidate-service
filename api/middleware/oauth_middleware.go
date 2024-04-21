@@ -77,7 +77,7 @@ func OAuthMiddleware(config utils.Config) gin.HandlerFunc {
 		// Expired -> get new token
 		expiresIn, _ := strconv.Atoi(oauthUserGoogle.ExpiresIn)
 		if expiresIn <= 0 {
-			fmt.Println("OAuthMiddleware - Token is expired")
+			logrus.Println("OAuthMiddleware - Token is expired")
 			oauth2Config := initOAuth2Config(config)
 			refreshToken, _ := ctx.Cookie(utils.RefreshToken)
 			tokenSource := oauth2Config.TokenSource(context.Background(), &oauth2.Token{
