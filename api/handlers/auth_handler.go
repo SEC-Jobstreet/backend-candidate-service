@@ -36,14 +36,13 @@ func (h *authHandler) HandleGoogleCallback(ctx *gin.Context) {
 		return
 	}
 
-	//ctx.SetCookie("access_token", response.AccessToken, 0, "/", "", false, false)
-	//ctx.SetCookie("refresh_token", response.RefreshToken, 0, "/", "", false, false)
-	//ctx.SetCookie("IDToken", response.IDToken, 0, "/", "", false, false)
-	//ctx.SetCookie("current-url", "", -1, "/", "", false, true)
+	logrus.Printf("HandleGoogleCallback - response from goole callback: %v", utils.LogFull(response))
+	ctx.SetCookie(utils.AccessToken, response.AccessToken, 3600, "/", "", true, false)
+	ctx.SetCookie(utils.RefreshToken, response.RefreshToken, 7200, "/", "", true, false)
+	ctx.SetCookie(utils.IdToken, response.IDToken, 3600, "/", "", true, false)
+	ctx.SetCookie(utils.CurrentUrl, "", -1, "/", "", true, true)
 
-	//ctx.Redirect(http.StatusMovedPermanently, response.CurrentUrl)
-
-	utils.Ok(ctx, response)
+	ctx.Redirect(http.StatusMovedPermanently, response.CurrentUrl)
 }
 
 func (h *authHandler) HandleAuthGoogle(ctx *gin.Context) {
@@ -57,7 +56,7 @@ func (h *authHandler) HandleAuthGoogle(ctx *gin.Context) {
 	request := ctx.Request.WithContext(context.WithValue(context.Background(), "provider", ctx.Param("provider")))
 
 	// Store current url
-	ctx.SetCookie("current-url", req.CurrentUrl, 3600, "/", "", false, true)
+	ctx.SetCookie(utils.CurrentUrl, req.CurrentUrl, 3600, "/", "", false, true)
 
 	// Begin auth google
 	gothic.BeginAuthHandler(ctx.Writer, request)

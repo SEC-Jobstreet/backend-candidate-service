@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/SEC-Jobstreet/backend-candidate-service/api/models"
@@ -11,13 +12,14 @@ import (
 	"golang.org/x/oauth2"
 	"io"
 	"net/http"
-	"strings"
+	"strconv"
+	"time"
 )
 
 func initOAuth2Config(config utils.Config) *oauth2.Config {
 	return &oauth2.Config{
-		ClientID:     config.OAuthGoogleClientId,     // Replace with your client ID
-		ClientSecret: config.OAuthGoogleClientSecret, // Replace with your client secret
+		ClientID:     config.OAuthGoogleClientId,
+		ClientSecret: config.OAuthGoogleClientSecret,
 		RedirectURL:  config.OAuthGoogleCallbackUrl,
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 		Endpoint:     google.Endpoint,
@@ -26,43 +28,31 @@ func initOAuth2Config(config utils.Config) *oauth2.Config {
 
 func OAuthMiddleware(config utils.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		//oauth2Config := initOAuth2Config(config)
-		//refreshToken := ctx.Request.Header.Get("Refresh-Token")
-
-		authorizationHeader := ctx.Request.Header.Get("Authorization")
-		if authorizationHeader == "" {
-			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "No Authorization header provided")
-			ctx.Abort()
-			return
-		}
-
-		accessToken := strings.TrimPrefix(authorizationHeader, "Bearer ")
-		if accessToken == authorizationHeader {
-			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Could not find bearer token in Authorization header")
-			ctx.Abort()
-			return
-		}
+		//accessToken, _ := ctx.Cookie(utils.AccessToken)
+		//idToken, _ := ctx.Cookie(utils.IdToken)
 
 		// Validate token
-		url := fmt.Sprintf("https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=%s", accessToken)
+		url := fmt.Sprintf("%s?access_token=%s", utils.UrlTokenInfo, "ya29.a0Ad52N38xQlLmCfMuyKD6G6NLPqRR-7QJjToEYr-wtsdZZHRMufpVHOAa9mbejJ-E-bMh_qFpcl-I6IBQA-V3cZUkRHQWl19dfCmdtbvPqy45eixjHAinh88AiLR3APZ_Ow2hDG7frH1xdqM3XqQhrFB15rt7usHqD-puaCgYKAX4SARISFQHGX2MiF5QfjBfgmOz-zeUd5Ib0vQ0171")
 		response, err := http.Get(url)
 		if err != nil {
-			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Token is valid")
+			logrus.Errorf("OAuthMiddleware - Error get tokeninfo, error = %v", err)
+			utils.ErrorWithMessage(ctx, http.StatusInternalServerError, "Internal Server Error")
 			ctx.Abort()
 			return
 		}
 		defer response.Body.Close()
+
 		if response.StatusCode != 200 {
-			logrus.Errorf("Error getting token info")
-			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Token is valid")
+			logrus.Errorf("OAuthMiddleware - Error getting token info, error = %v", utils.LogFull(response))
+			utils.ErrorWithMessage(ctx, http.StatusBadRequest, "Token is invalid")
 			ctx.Abort()
 			return
 		}
 
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
-			logrus.Errorf("Error reading body: %v", err)
-			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Token is valid")
+			logrus.Errorf("OAuthMiddleware - Error reading body: %v", err)
+			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Token is invalid")
 			ctx.Abort()
 			return
 		}
@@ -70,20 +60,39 @@ func OAuthMiddleware(config utils.Config) gin.HandlerFunc {
 		var oauthUserGoogle models.OAuthUserGoogleInfo
 		err = json.Unmarshal(body, &oauthUserGoogle)
 		if err != nil {
-			logrus.Errorf("Error unmarshalling oauthUserGoogle info: %v", err)
-			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Token is valid")
+			logrus.Errorf("OAuthMiddleware - Error unmarshalling oauthUserGoogle info: %v", err)
+			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Token is invalid")
 			ctx.Abort()
 			return
 		}
-		logrus.Printf("oauthUserGoogle = %v", utils.LogFull(oauthUserGoogle))
+		logrus.Printf("OAuthMiddleware - oauthUserGoogle = %v", utils.LogFull(oauthUserGoogle))
 
-		// Get new token from refresh token
-		//tokenSource := oauth2Config.TokenSource(context.Background(), &oauth2.Token{
-		//	RefreshToken: refreshToken,
-		//	AccessToken:  accessToken,
-		//	Expiry:       time.Now().Add(1 * time.Hour),
-		//})
+		if oauthUserGoogle.ErrorDescription != "" {
+			logrus.Errorf("OAuthMiddleware - Error description = %v", oauthUserGoogle.ErrorDescription)
+			utils.ErrorWithMessage(ctx, http.StatusBadRequest, "Token is invalid")
+			ctx.Abort()
+			return
+		}
 
+		// Expired -> get new token
+		expiresIn, _ := strconv.Atoi(oauthUserGoogle.ExpiresIn)
+		if expiresIn <= 0 {
+			fmt.Println("OAuthMiddleware - Token is expired")
+			oauth2Config := initOAuth2Config(config)
+			refreshToken, _ := ctx.Cookie(utils.RefreshToken)
+			tokenSource := oauth2Config.TokenSource(context.Background(), &oauth2.Token{
+				RefreshToken: refreshToken,
+				Expiry:       time.Now().Add(1 * time.Hour),
+			})
+			newToken, err := tokenSource.Token()
+			if err != nil || newToken == nil {
+				logrus.Errorf("OAuthMiddleware - Error getting token from refresh token: %v", err)
+				utils.ErrorWithMessage(ctx, http.StatusInternalServerError, "Could not get access token")
+				ctx.Abort()
+				return
+			}
+			ctx.SetCookie(utils.AccessToken, (*newToken).AccessToken, 3600, "/", "", true, false)
+		}
 		ctx.Next()
 	}
 }

@@ -25,14 +25,14 @@ func (s *authService) HandleGoogleCallback(ctx *gin.Context, config utils.Config
 	var response models.OAuthGoogleResponse
 	gothUser, err := gothic.CompleteUserAuth(ctx.Writer, ctx.Request)
 	if err != nil {
-		logrus.Errorf("HandleGoogleCallback - Error = %v", err)
+		logrus.Errorf("HandleGoogleCallback - Error complete user auth google, error = %v", err)
 		return response, &models.AppError{
 			Code:  http.StatusInternalServerError,
 			Error: err,
 		}
 	}
 
-	currentURL, err := ctx.Cookie("current-url")
+	currentURL, err := ctx.Cookie(utils.CurrentUrl)
 	if err != nil || currentURL == "" {
 		currentURL = config.FrontendURL
 	}

@@ -31,13 +31,14 @@ type AuthClaim struct {
 }
 
 type OAuthUserGoogleInfo struct {
-	Azp           string `json:"azp,omitempty"`
-	Aud           string `json:"aud,omitempty"`
-	Sub           string `json:"sub,omitempty"`
-	Scope         string `json:"scope,omitempty"`
-	Exp           string `json:"exp,omitempty"`
-	ExpiresIn     string `json:"expires_in,omitempty"`
-	Email         string `json:"email,omitempty"`
-	EmailVerified string `json:"email_verified,omitempty"`
-	AccessType    string `json:"access_type,omitempty"`
+	Azp              string `json:"azp,omitempty"`
+	Aud              string `json:"aud,omitempty"`
+	Sub              string `json:"sub,omitempty"`
+	Scope            string `json:"scope,omitempty"`
+	Exp              string `json:"exp,omitempty"`
+	ExpiresIn        string `json:"expires_in,omitempty"`
+	Email            string `json:"email,omitempty"`
+	EmailVerified    string `json:"email_verified,omitempty"`
+	AccessType       string `json:"access_type,omitempty"`
+	ErrorDescription string `json:"error_description,omitempty"`
 }
