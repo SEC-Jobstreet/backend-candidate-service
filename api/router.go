@@ -18,27 +18,27 @@ func (s *Server) setupRouter() {
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"},
 		AllowHeaders:     []string{"Origin", "content-type", "accept", "authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	authRoutes := router.Group("/api/v1").Use(middleware.IsAuthorizedJWT(&s.config))
+	authRoutes := router.Group("/api/v1").Use(middleware.IsAuthorizedJWT(s.config))
 
 	authRoutes.POST("/apply_job", s.example)
 
 	// Oauth
 	apiOauthGoogle := router.Group("/oauth")
 	{
-		apiOauthGoogle.GET("/:provider/callback", s.authHandler.HandleGoogleCallback)
-		apiOauthGoogle.GET("/:provider", s.authHandler.HandleAuthGoogle)
+		apiOauthGoogle.GET("/:provider/callback", s.authHandler.HandleCallback)
+		apiOauthGoogle.GET("/:provider", s.authHandler.HandleAuth)
+		apiOauthGoogle.POST("/:provider/refresh_token", s.authHandler.HandleRefresh)
 	}
 
 	apiHome := router.Group("/test")
 	{
-		apiHome.GET("/apply_job", middleware.OAuthMiddleware(s.config), s.example)
+		apiHome.GET("/apply_job", middleware.IsAuthorizedJWT(s.config), s.example)
 	}
 
 	s.router = router

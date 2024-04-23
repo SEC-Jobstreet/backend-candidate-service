@@ -15,7 +15,6 @@ type Config struct {
 	OAuthGoogleClientId     string `mapstructure:"OAUTH_GOOGLE_CLIENT_ID"`
 	OAuthGoogleClientSecret string `mapstructure:"OAUTH_GOOGLE_CLIENT_SECRET"`
 	OAuthGoogleCallbackUrl  string `mapstructure:"OAUTH_GOOGLE_CALLBACK_URL"`
-	JwtSecretKey            string `mapstructure:"JWT_SECRET_KEY"`
 }
 
 // LoadConfig reads configuration from file or environment variable.

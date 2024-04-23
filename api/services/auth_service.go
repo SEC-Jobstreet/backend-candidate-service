@@ -11,7 +11,7 @@ import (
 )
 
 type AuthService interface {
-	HandleGoogleCallback(ctx *gin.Context, config utils.Config) (models.OAuthGoogleResponse, *models.AppError)
+	HandleCallback(ctx *gin.Context, config utils.Config) (models.OAuthResponse, *models.AppError)
 }
 
 type authService struct {
@@ -21,11 +21,11 @@ func NewAuthService() AuthService {
 	return &authService{}
 }
 
-func (s *authService) HandleGoogleCallback(ctx *gin.Context, config utils.Config) (models.OAuthGoogleResponse, *models.AppError) {
-	var response models.OAuthGoogleResponse
+func (s *authService) HandleCallback(ctx *gin.Context, config utils.Config) (models.OAuthResponse, *models.AppError) {
+	var response models.OAuthResponse
 	gothUser, err := gothic.CompleteUserAuth(ctx.Writer, ctx.Request)
 	if err != nil {
-		logrus.Errorf("HandleGoogleCallback - Error complete user auth google, error = %v", err)
+		logrus.Errorf("HandleCallback - Error complete user auth , error = %v", err)
 		return response, &models.AppError{
 			Code:  http.StatusInternalServerError,
 			Error: err,
@@ -37,9 +37,7 @@ func (s *authService) HandleGoogleCallback(ctx *gin.Context, config utils.Config
 		currentURL = config.FrontendURL
 	}
 
-	response.AccessToken = gothUser.AccessToken
-	response.RefreshToken = gothUser.RefreshToken
-	response.IDToken = gothUser.IDToken
+	response.User = gothUser
 	response.CurrentUrl = currentURL
 
 	return response, nil
