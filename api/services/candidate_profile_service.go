@@ -259,17 +259,9 @@ func (s *candidateProfileService) UpdateProfile(ctx *gin.Context, req models.Use
 	reqUpdate.ResumeLink = pgtype.Text{String: location, Valid: true}
 
 	// Trigger save user
-	profile, errGetProfile := s.GetProfileByUserId(ctx, currentUser.Username)
-	if errGetProfile != nil {
-		logrus.Errorf("UpdateProfile - Error get profile, error = %v", utils.LogFull(errGetProfile))
-		return &models.AppError{
-			Code:    http.StatusBadRequest,
-			Error:   errGetProfile.Error,
-			Message: errGetProfile.Message,
-		}
-	}
-	if len(strings.TrimSpace(profile.UserID)) == 0 {
+	if len(strings.TrimSpace(profileFromDB.UserID)) == 0 {
 		reqUpdate.UserID = currentUser.Username
+		reqUpdate.GoogleID = pgtype.Int8{Valid: true}
 		errCreate := s.CreateProfile(reqUpdate)
 		if errCreate != nil {
 			return &models.AppError{
@@ -287,11 +279,11 @@ func (s *candidateProfileService) UpdateProfile(ctx *gin.Context, req models.Use
 
 func (s *candidateProfileService) CreateProfile(reqCreate models.CandidateProfile) *models.AppError {
 	db := internals.GetDb()
-	err := db.Create(&reqCreate)
-	if err != nil {
-		logrus.Errorf("CreateProfile - Error create profile, error = %v", err)
+	tx := db.Create(&reqCreate)
+	if tx.Error != nil {
+		logrus.Errorf("CreateProfile - Error create profile, error = %v", tx.Error)
 		return &models.AppError{
-			Error:   err.Error,
+			Error:   tx.Error,
 			Code:    http.StatusInternalServerError,
 			Message: utils.INTERNAL_SERVER_ERROR,
 		}

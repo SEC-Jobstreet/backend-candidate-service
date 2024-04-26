@@ -29,25 +29,25 @@ func NewCandidateProfileHandler(candidateProfileService services.CandidateProfil
 func (h *candidateProfileHandler) GetProfile(ctx *gin.Context) {
 	res, err := h.candidateProfileService.GetProfile(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusOK, nil)
+		utils.Error(ctx, http.StatusOK)
 		return
 	}
-	ctx.JSON(http.StatusOK, res)
+	utils.Ok(ctx, res)
 }
 
 func (h *candidateProfileHandler) UpdateProfile(ctx *gin.Context) {
 	var req models.UserProfileEditRequest
 	if err := ctx.ShouldBind(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ErrorWithMessage(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	errCreate := h.candidateProfileService.UpdateProfile(ctx, req)
-	if errCreate != nil {
-		logrus.Errorf("ProfileHandler>CreateProfile - Failed create profile. Error = %v", errCreate.Error)
-		ctx.JSON(errCreate.Code, gin.H{"error": errCreate.Message})
+	errSave := h.candidateProfileService.UpdateProfile(ctx, req)
+	if errSave != nil {
+		logrus.Errorf("ProfileHandler>CreateProfile - Failed create/update profile. Error = %v", errSave.Error)
+		utils.ErrorWithMessage(ctx, errSave.Code, errSave.Message)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, req)
+	utils.Ok(ctx, req)
 }
