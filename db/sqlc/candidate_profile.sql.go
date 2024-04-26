@@ -7,13 +7,115 @@ package db
 
 import (
 	"context"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createCandidateProfile = `-- name: CreateCandidateProfile :one
+INSERT INTO candidate_profile (user_id,
+                               created_at,
+                               updated_at)
+VALUES ($1, now(), now()) RETURNING user_id, google_id, email, first_name, last_name, profile_image, first_name_profile, last_name_profile, phone, phone_number_country, address, current_location, privacy_setting, work_eligibility, resume_link, "current_role", work_whenever, work_shift, location_lat, location_lon, visa, description, position, start_date, share_profile, updated_at, created_at
+`
+
+func (q *Queries) CreateCandidateProfile(ctx context.Context, userID string) (CandidateProfile, error) {
+	row := q.db.QueryRow(ctx, createCandidateProfile, userID)
+	var i CandidateProfile
+	err := row.Scan(
+		&i.UserID,
+		&i.GoogleID,
+		&i.Email,
+		&i.FirstName,
+		&i.LastName,
+		&i.ProfileImage,
+		&i.FirstNameProfile,
+		&i.LastNameProfile,
+		&i.Phone,
+		&i.PhoneNumberCountry,
+		&i.Address,
+		&i.CurrentLocation,
+		&i.PrivacySetting,
+		&i.WorkEligibility,
+		&i.ResumeLink,
+		&i.CurrentRole,
+		&i.WorkWhenever,
+		&i.WorkShift,
+		&i.LocationLat,
+		&i.LocationLon,
+		&i.Visa,
+		&i.Description,
+		&i.Position,
+		&i.StartDate,
+		&i.ShareProfile,
+		&i.UpdatedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
 
 const getCandidateProfiles = `-- name: GetCandidateProfiles :many
 
-SELECT user_id, google_id, email, first_name, last_name, profile_image, first_name_profile, last_name_profile, phone, address, location_lat, location_lon, visa, description, position, start_date, work_whenever, work_shift, share_profile, resume_link, updated_at, created_at, auth_method
+SELECT user_id,
+       google_id,
+       COALESCE(email, '')                AS email,
+       COALESCE(first_name, '')           AS first_name,
+       COALESCE(last_name, '')            AS last_name,
+       COALESCE(profile_image, '')        AS profile_image,
+       COALESCE(first_name_profile, '')   AS first_name_profile,
+       COALESCE(last_name_profile, '')    AS last_name_profile,
+       COALESCE(phone, '')                AS phone,
+       COALESCE(phone_number_country, '') AS phone_number_country,
+       COALESCE(address, '')              AS address,
+       COALESCE(current_location, '')     AS current_location,
+       COALESCE(privacy_setting, '')      AS privacy_setting,
+       work_eligibility,
+       COALESCE(resume_link, '')          AS resume_link,
+       COALESCE("current_role", '')       AS current_role,
+       work_whenever,
+       work_shift                         AS work_shift,
+       COALESCE(location_lat, 0.0)        AS location_lat,
+       COALESCE(location_lon, 0.0)        AS location_lon,
+       visa,
+       COALESCE(description, '')          AS description,
+       COALESCE(position, '') AS position,
+    COALESCE(start_date, '1970-01-01') AS start_date, -- Assuming DATE type, default to UNIX epoch start
+    share_profile,
+    updated_at,
+    created_at
 FROM public.candidate_profile
+WHERE user_id = $1
 `
+
+type GetCandidateProfilesRow struct {
+	UserID             string      `json:"user_id"`
+	GoogleID           pgtype.Int8 `json:"google_id"`
+	Email              string      `json:"email"`
+	FirstName          string      `json:"first_name"`
+	LastName           string      `json:"last_name"`
+	ProfileImage       string      `json:"profile_image"`
+	FirstNameProfile   string      `json:"first_name_profile"`
+	LastNameProfile    string      `json:"last_name_profile"`
+	Phone              string      `json:"phone"`
+	PhoneNumberCountry string      `json:"phone_number_country"`
+	Address            string      `json:"address"`
+	CurrentLocation    string      `json:"current_location"`
+	PrivacySetting     string      `json:"privacy_setting"`
+	WorkEligibility    []byte      `json:"work_eligibility"`
+	ResumeLink         string      `json:"resume_link"`
+	CurrentRole        string      `json:"current_role"`
+	WorkWhenever       pgtype.Bool `json:"work_whenever"`
+	WorkShift          []byte      `json:"work_shift"`
+	LocationLat        float64     `json:"location_lat"`
+	LocationLon        float64     `json:"location_lon"`
+	Visa               pgtype.Bool `json:"visa"`
+	Description        string      `json:"description"`
+	Position           string      `json:"position"`
+	StartDate          pgtype.Date `json:"start_date"`
+	ShareProfile       pgtype.Bool `json:"share_profile"`
+	UpdatedAt          time.Time   `json:"updated_at"`
+	CreatedAt          time.Time   `json:"created_at"`
+}
 
 // -- name: CreateApplication :one
 // INSERT INTO applications (
@@ -57,15 +159,15 @@ FROM public.candidate_profile
 //	id = sqlc.arg(id)
 //
 // RETURNING *;
-func (q *Queries) GetCandidateProfiles(ctx context.Context) ([]CandidateProfile, error) {
-	rows, err := q.db.Query(ctx, getCandidateProfiles)
+func (q *Queries) GetCandidateProfiles(ctx context.Context, userID string) ([]GetCandidateProfilesRow, error) {
+	rows, err := q.db.Query(ctx, getCandidateProfiles, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []CandidateProfile{}
+	items := []GetCandidateProfilesRow{}
 	for rows.Next() {
-		var i CandidateProfile
+		var i GetCandidateProfilesRow
 		if err := rows.Scan(
 			&i.UserID,
 			&i.GoogleID,
@@ -76,20 +178,24 @@ func (q *Queries) GetCandidateProfiles(ctx context.Context) ([]CandidateProfile,
 			&i.FirstNameProfile,
 			&i.LastNameProfile,
 			&i.Phone,
+			&i.PhoneNumberCountry,
 			&i.Address,
+			&i.CurrentLocation,
+			&i.PrivacySetting,
+			&i.WorkEligibility,
+			&i.ResumeLink,
+			&i.CurrentRole,
+			&i.WorkWhenever,
+			&i.WorkShift,
 			&i.LocationLat,
 			&i.LocationLon,
 			&i.Visa,
 			&i.Description,
 			&i.Position,
 			&i.StartDate,
-			&i.WorkWhenever,
-			&i.WorkShift,
 			&i.ShareProfile,
-			&i.ResumeLink,
 			&i.UpdatedAt,
 			&i.CreatedAt,
-			&i.AuthMethod,
 		); err != nil {
 			return nil, err
 		}

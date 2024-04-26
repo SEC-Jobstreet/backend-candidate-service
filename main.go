@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/SEC-Jobstreet/backend-candidate-service/api/middleware"
+	"github.com/SEC-Jobstreet/backend-candidate-service/externals"
+	"github.com/SEC-Jobstreet/backend-candidate-service/internals"
 	"os"
 	"os/signal"
 	"syscall"
@@ -49,7 +52,8 @@ func main() {
 		log.Fatal().Msg("cannot connect to db")
 	}
 
-	//runDBMigration(config)
+	internals.InitGorm(config)
+	runDBMigration(config)
 	runOauthGoogle(config)
 	store := db.NewStore(connPool)
 
@@ -81,11 +85,17 @@ func runGinServer(ctx context.Context, waitGroup *errgroup.Group, config utils.C
 
 	// services
 	authService := services.NewAuthService()
+	awsHandler := externals.NewAWSHandler()
+	candidateProfileService := services.NewCandidateProfileService(store, awsHandler, config)
 
 	// handlers
 	authHandler := handlers.NewAuthHandler(authService, config)
+	candidateProfileHandler := handlers.NewCandidateProfileHandler(candidateProfileService, config)
 
-	ginServer, err := api.NewServer(config, store, authHandler)
+	// middleware
+	apiMiddleware := middleware.NewMiddleware(candidateProfileService)
+
+	ginServer, err := api.NewServer(config, store, authHandler, candidateProfileHandler, apiMiddleware)
 	if err != nil {
 		log.Fatal().Msg("cannot create server")
 	}

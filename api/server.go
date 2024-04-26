@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/SEC-Jobstreet/backend-candidate-service/api/handlers"
+	"github.com/SEC-Jobstreet/backend-candidate-service/api/middleware"
 	"net/http"
 
 	db "github.com/SEC-Jobstreet/backend-candidate-service/db/sqlc"
@@ -15,10 +16,12 @@ import (
 
 // Server serves HTTP requests for our banking service.
 type Server struct {
-	config      utils.Config
-	store       db.Store
-	router      *gin.Engine
-	authHandler handlers.AuthHandler
+	config                  utils.Config
+	store                   db.Store
+	router                  *gin.Engine
+	authHandler             handlers.AuthHandler
+	candidateProfileHandler handlers.CandidateProfileHandler
+	apiMiddleware           *middleware.ApiMiddleware
 }
 
 // NewServer creates a new HTTP server and setup routing.
@@ -26,11 +29,15 @@ func NewServer(
 	config utils.Config,
 	store db.Store,
 	authHandler handlers.AuthHandler,
+	candidateProfileHandler handlers.CandidateProfileHandler,
+	apiMiddleware *middleware.ApiMiddleware,
 ) (*Server, error) {
 	server := &Server{
-		config:      config,
-		store:       store,
-		authHandler: authHandler,
+		config:                  config,
+		store:                   store,
+		authHandler:             authHandler,
+		candidateProfileHandler: candidateProfileHandler,
+		apiMiddleware:           apiMiddleware,
 	}
 
 	server.setupRouter()

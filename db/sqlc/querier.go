@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	CreateCandidateProfile(ctx context.Context, userID string) (CandidateProfile, error)
 	// -- name: CreateApplication :one
 	// INSERT INTO applications (
 	//     candidate_id,
@@ -41,7 +42,7 @@ type Querier interface {
 	// WHERE
 	//     id = sqlc.arg(id)
 	// RETURNING *;
-	GetCandidateProfiles(ctx context.Context) ([]CandidateProfile, error)
+	GetCandidateProfiles(ctx context.Context, userID string) ([]GetCandidateProfilesRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

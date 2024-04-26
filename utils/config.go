@@ -15,6 +15,15 @@ type Config struct {
 	OAuthGoogleClientId     string `mapstructure:"OAUTH_GOOGLE_CLIENT_ID"`
 	OAuthGoogleClientSecret string `mapstructure:"OAUTH_GOOGLE_CLIENT_SECRET"`
 	OAuthGoogleCallbackUrl  string `mapstructure:"OAUTH_GOOGLE_CALLBACK_URL"`
+	CognitoRegion           string `mapstructure:"COGNITO_REGION"`
+	CognitoUserPoolID       string `mapstructure:"COGNITO_USER_POOL_ID"`
+	S3AccessKeyId           string `mapstructure:"S3_ACCESS_KEY_ID"`
+	S3SecretAccessKey       string `mapstructure:"S3_SECRET_ACCESS_KEY"`
+	S3Region                string `mapstructure:"S3_REGION"`
+	S3DisableSSL            bool   `mapstructure:"S3_DISABLE_SSL"`
+	S3ForcePathStyle        bool   `mapstructure:"S3_FORCE_PATH_STYLE"`
+	S3EndPoint              string `mapstructure:"S3_END_POINT"`
+	S3BucketName            string `mapstructure:"S3_BUCKET_NAME"`
 }
 
 // LoadConfig reads configuration from file or environment variable.

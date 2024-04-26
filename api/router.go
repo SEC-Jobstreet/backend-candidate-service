@@ -36,9 +36,17 @@ func (s *Server) setupRouter() {
 		apiOauthGoogle.POST("/:provider/refresh_token", s.authHandler.HandleRefresh)
 	}
 
+	// Test
 	apiHome := router.Group("/test")
 	{
 		apiHome.GET("/apply_job", middleware.IsAuthorizedJWT(s.config), s.example)
+	}
+
+	// Candidate
+	apiProfile := router.Group("/profiles")
+	{
+		apiProfile.GET("", s.apiMiddleware.AuthMiddleware(s.config), s.candidateProfileHandler.GetProfile)
+		apiProfile.PUT("", s.apiMiddleware.AuthMiddleware(s.config), s.candidateProfileHandler.UpdateProfile)
 	}
 
 	s.router = router
