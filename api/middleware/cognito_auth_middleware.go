@@ -206,18 +206,6 @@ func (m *ApiMiddleware) AuthMiddleware(config utils.Config) gin.HandlerFunc {
 		}
 		ctx.Set(utils.CurrentUser, currentUser)
 
-		// Trigger save user
-		profile, errGetProfile := m.candidateProfileService.GetProfileByUserId(ctx, currentUser.Username)
-		if errGetProfile != nil {
-			logrus.Errorf("Error get profile, error = %v", utils.LogFull(errGetProfile))
-			utils.ErrorWithMessage(ctx, http.StatusUnauthorized, "Invalid token")
-			ctx.Abort()
-			return
-		}
-		if len(strings.TrimSpace(profile.UserID)) == 0 {
-			m.candidateProfileService.CreateProfile(ctx, models.UserProfileCreateRequest{UserId: currentUser.Username})
-		}
-
 		// Next
 		ctx.Next()
 	}

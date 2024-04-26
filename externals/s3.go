@@ -2,6 +2,7 @@ package externals
 
 import (
 	"errors"
+	"fmt"
 	"github.com/SEC-Jobstreet/backend-candidate-service/utils"
 	"io"
 	"net/http"
@@ -29,6 +30,7 @@ type awsconfig struct {
 	ForcePathStyle  bool     `json:"force_path_style"`
 	Endpoint        string   `json:"endpoint"`
 	BucketName      string   `json:"bucket"`
+	BucketSubFolder string   `json:"-"`
 	CorsOrigins     []string `json:"cors_origins"`
 }
 
@@ -67,6 +69,7 @@ func (ah *AWSHandler) Init(config utils.Config) error {
 		ForcePathStyle:  config.S3ForcePathStyle,
 		Endpoint:        config.S3EndPoint,
 		BucketName:      config.S3BucketName,
+		BucketSubFolder: config.S3BucketSubFolder,
 	}
 
 	if ah.conf.AccessKeyId == "" {
@@ -97,7 +100,12 @@ func (ah *AWSHandler) Init(config utils.Config) error {
 	ah.svc = s3.New(sess)
 
 	// Check if bucket already exists.
-	_, err = ah.svc.HeadBucket(&s3.HeadBucketInput{Bucket: aws.String(ah.conf.BucketName)})
+	//_, err = ah.svc.HeadBucket(&s3.HeadBucketInput{Bucket: aws.String(ah.conf.BucketName)})
+	_, err = ah.svc.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket:  aws.String(ah.conf.BucketName),
+		Prefix:  aws.String(ah.conf.BucketSubFolder),
+		MaxKeys: aws.Int64(1),
+	})
 	if err == nil {
 		// Bucket exists
 		return nil
@@ -155,7 +163,7 @@ func (ah *AWSHandler) Upload(filename string, file io.ReadSeeker) (string, int64
 	rc := readerCounter{reader: file}
 	result, err := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(ah.conf.BucketName),
-		Key:    aws.String(filename),
+		Key:    aws.String(fmt.Sprintf("%s/%s", ah.conf.BucketSubFolder, filename)),
 		Body:   &rc,
 	})
 

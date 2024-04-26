@@ -122,21 +122,21 @@ type Role struct {
 }
 
 type UserProfileEditRequest struct {
-	LastName                    string                 `form:"last_name"`
-	FirstName                   string                 `form:"first_name"`
-	PhoneNumberCountry          string                 `form:"phone_number_country"`
-	PhoneNumber                 string                 `form:"phone"`
-	CurrentLocation             string                 `form:"current_location"`
-	LocationLon                 string                 `form:"location_lon"`
-	LocationLat                 string                 `form:"location_lat"`
-	AddressComponentsSerialized string                 `form:"address_components_serialized"`
-	WorkEligibility             map[string]string      `form:"work_eligibility"`
-	AboutMe                     string                 `form:"about_me"`
-	CurrentRole                 string                 `form:"current_role"`
-	StartDate                   string                 `form:"start_date"`
-	WorkShift                   map[string]interface{} `form:"work_shift"`
-	PrivacySetting              string                 `form:"privacy_setting"`
-	Resume                      multipart.FileHeader   `form:"resume"`
+	LastName                    string                 `json:"last_name" form:"last_name" validate:"required"`
+	FirstName                   string                 `json:"first_name" form:"first_name" validate:"required"`
+	PhoneNumberCountry          string                 `json:"phone_number_country" form:"phone_number_country" validate:"required"`
+	PhoneNumber                 string                 `json:"phone" form:"phone" validate:"required"`
+	CurrentLocation             string                 `json:"current_location" form:"current_location" validate:"required"`
+	LocationLon                 string                 `json:"location_lon" form:"location_lon"`
+	LocationLat                 string                 `json:"location_lat" form:"location_lat"`
+	AddressComponentsSerialized string                 `json:"address_components_serialized" form:"address_components_serialized"`
+	WorkEligibility             map[string]string      `json:"work_eligibility" form:"work_eligibility"`
+	AboutMe                     string                 `json:"about_me" form:"about_me"`
+	CurrentRole                 string                 `json:"current_role" form:"current_role"`
+	StartDate                   string                 `json:"start_date" form:"start_date"`
+	WorkShift                   map[string]interface{} `json:"work_shift" form:"work_shift"`
+	PrivacySetting              string                 `json:"privacy_setting" form:"privacy_setting"`
+	Resume                      multipart.FileHeader   `json:"resume" form:"resume"`
 }
 
 type UserProfileCreateRequest struct {

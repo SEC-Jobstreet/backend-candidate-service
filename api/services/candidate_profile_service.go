@@ -3,13 +3,14 @@ package services
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"github.com/SEC-Jobstreet/backend-candidate-service/api/models"
 	db "github.com/SEC-Jobstreet/backend-candidate-service/db/sqlc"
 	"github.com/SEC-Jobstreet/backend-candidate-service/externals"
 	"github.com/SEC-Jobstreet/backend-candidate-service/internals"
 	"github.com/SEC-Jobstreet/backend-candidate-service/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/sirupsen/logrus"
 	"io"
@@ -23,7 +24,7 @@ type CandidateProfileService interface {
 	GetProfile(ctx *gin.Context) (models.GetCandidateProfilesResponse, *models.AppError)
 	GetProfileByUserId(ctx *gin.Context, userId string) (db.GetCandidateProfilesRow, *models.AppError)
 	UpdateProfile(ctx *gin.Context, req models.UserProfileEditRequest) *models.AppError
-	CreateProfile(ctx *gin.Context, req models.UserProfileCreateRequest) *models.AppError
+	CreateProfile(req models.CandidateProfile) *models.AppError
 }
 type candidateProfileService struct {
 	store      db.Store
@@ -153,6 +154,35 @@ func (s *candidateProfileService) GetProfileByUserId(ctx *gin.Context, userId st
 }
 
 func (s *candidateProfileService) UpdateProfile(ctx *gin.Context, req models.UserProfileEditRequest) *models.AppError {
+	// Validate request
+	validate := validator.New()
+	errValidate := validate.Struct(req)
+	if errValidate != nil {
+		if _, ok := errValidate.(*validator.InvalidValidationError); ok {
+			logrus.Errorf("UpdateProfile - errValidate = %v", errValidate)
+			return &models.AppError{
+				Code:    http.StatusBadRequest,
+				Error:   errValidate,
+				Message: errValidate.Error(),
+			}
+		}
+
+		for _, err := range errValidate.(validator.ValidationErrors) {
+			logrus.Errorf("UpdateProfile - Error: Field '%s' failed validation '%s'\n", err.Field(), err.Tag())
+			return &models.AppError{
+				Code:    http.StatusBadRequest,
+				Error:   errValidate,
+				Message: fmt.Sprintf("Field '%s' failed validation '%s'", err.Field(), err.Tag()),
+			}
+		}
+
+		return &models.AppError{
+			Code:    http.StatusBadRequest,
+			Error:   errValidate,
+			Message: errValidate.Error(),
+		}
+	}
+
 	// Get current user
 	currentUser, err := utils.GetCurrentUser(ctx)
 	db := internals.GetDb()
@@ -228,27 +258,40 @@ func (s *candidateProfileService) UpdateProfile(ctx *gin.Context, req models.Use
 	}
 	reqUpdate.ResumeLink = pgtype.Text{String: location, Valid: true}
 
-	// Update
-	db.Omit("created_at").Where("user_id = ?", reqUpdate.UserID).Updates(reqUpdate)
-
-	return nil
-}
-
-func (s *candidateProfileService) CreateProfile(ctx *gin.Context, req models.UserProfileCreateRequest) *models.AppError {
-	if len(strings.TrimSpace(req.UserId)) == 0 {
+	// Trigger save user
+	profile, errGetProfile := s.GetProfileByUserId(ctx, currentUser.Username)
+	if errGetProfile != nil {
+		logrus.Errorf("UpdateProfile - Error get profile, error = %v", utils.LogFull(errGetProfile))
 		return &models.AppError{
-			Error:   errors.New("user id is required"),
 			Code:    http.StatusBadRequest,
-			Message: "user id is required",
+			Error:   errGetProfile.Error,
+			Message: errGetProfile.Message,
+		}
+	}
+	if len(strings.TrimSpace(profile.UserID)) == 0 {
+		reqUpdate.UserID = currentUser.Username
+		errCreate := s.CreateProfile(reqUpdate)
+		if errCreate != nil {
+			return &models.AppError{
+				Error:   errCreate.Error,
+				Code:    http.StatusInternalServerError,
+				Message: errCreate.Message,
+			}
 		}
 	}
 
-	// Save
-	_, err := s.store.CreateCandidateProfile(ctx, req.UserId)
+	// Update
+	db.Omit("created_at").Where("user_id = ?", reqUpdate.UserID).Updates(reqUpdate)
+	return nil
+}
+
+func (s *candidateProfileService) CreateProfile(reqCreate models.CandidateProfile) *models.AppError {
+	db := internals.GetDb()
+	err := db.Create(&reqCreate)
 	if err != nil {
 		logrus.Errorf("CreateProfile - Error create profile, error = %v", err)
 		return &models.AppError{
-			Error:   err,
+			Error:   err.Error,
 			Code:    http.StatusInternalServerError,
 			Message: utils.INTERNAL_SERVER_ERROR,
 		}
