@@ -16,7 +16,7 @@ const createCandidateProfile = `-- name: CreateCandidateProfile :one
 INSERT INTO candidate_profile (user_id,
                                created_at,
                                updated_at)
-VALUES ($1, now(), now()) RETURNING user_id, google_id, email, first_name, last_name, profile_image, first_name_profile, last_name_profile, phone, phone_number_country, address, current_location, privacy_setting, work_eligibility, resume_link, resume, "current_role", work_whenever, work_shift, location_lat, location_lon, visa, description, position, start_date, share_profile, updated_at, created_at
+VALUES ($1, now(), now()) RETURNING user_id, google_id, email, first_name, last_name, profile_image, first_name_profile, last_name_profile, phone, phone_number_country, address, current_location, privacy_setting, resume_link, resume, "current_role", work_whenever, work_shift, location_lat, location_lon, visa, description, position, start_date, share_profile, updated_at, created_at
 `
 
 func (q *Queries) CreateCandidateProfile(ctx context.Context, userID string) (CandidateProfile, error) {
@@ -36,7 +36,6 @@ func (q *Queries) CreateCandidateProfile(ctx context.Context, userID string) (Ca
 		&i.Address,
 		&i.CurrentLocation,
 		&i.PrivacySetting,
-		&i.WorkEligibility,
 		&i.ResumeLink,
 		&i.Resume,
 		&i.CurrentRole,
@@ -70,12 +69,11 @@ SELECT user_id,
        COALESCE(address, '')              AS address,
        COALESCE(current_location, '')     AS current_location,
        COALESCE(privacy_setting, '')      AS privacy_setting,
-       work_eligibility,
        COALESCE(resume_link, '')          AS resume_link,
        COALESCE(resume, '')               AS resume,
        COALESCE("current_role", '')       AS current_role,
        work_whenever,
-       work_shift                         AS work_shift,
+       COALESCE("work_shift", '')         AS work_shift,
        COALESCE(location_lat, 0.0)        AS location_lat,
        COALESCE(location_lon, 0.0)        AS location_lon,
        visa,
@@ -103,12 +101,11 @@ type GetCandidateProfilesRow struct {
 	Address            string      `json:"address"`
 	CurrentLocation    string      `json:"current_location"`
 	PrivacySetting     string      `json:"privacy_setting"`
-	WorkEligibility    []byte      `json:"work_eligibility"`
 	ResumeLink         string      `json:"resume_link"`
 	Resume             string      `json:"resume"`
 	CurrentRole        string      `json:"current_role"`
 	WorkWhenever       pgtype.Bool `json:"work_whenever"`
-	WorkShift          []byte      `json:"work_shift"`
+	WorkShift          string      `json:"work_shift"`
 	LocationLat        float64     `json:"location_lat"`
 	LocationLon        float64     `json:"location_lon"`
 	Visa               pgtype.Bool `json:"visa"`
@@ -185,7 +182,6 @@ func (q *Queries) GetCandidateProfiles(ctx context.Context, userID string) ([]Ge
 			&i.Address,
 			&i.CurrentLocation,
 			&i.PrivacySetting,
-			&i.WorkEligibility,
 			&i.ResumeLink,
 			&i.Resume,
 			&i.CurrentRole,

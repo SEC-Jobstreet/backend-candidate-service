@@ -20,12 +20,12 @@ type CandidateProfile struct {
 	Address            pgtype.Text   `json:"address" gorm:"column:address"`
 	CurrentLocation    pgtype.Text   `json:"current_location" gorm:"column:current_location"`
 	PrivacySetting     pgtype.Text   `json:"privacy_setting" gorm:"privacy_setting"`
-	WorkEligibility    []byte        `json:"work_eligibility" gorm:"work_eligibility"`
+	WorkEligibility    pgtype.Text   `json:"work_eligibility" gorm:"work_eligibility"`
 	ResumeLink         pgtype.Text   `json:"resume_link" gorm:"resume_link"`
 	Resume             pgtype.Text   `json:"resume" gorm:"resume"`
 	CurrentRole        pgtype.Text   `json:"current_role" gorm:"current_role"`
 	WorkWhenever       pgtype.Bool   `json:"work_whenever" gorm:"work_whenever"`
-	WorkShift          []byte        `json:"work_shift" gorm:"work_shift"`
+	WorkShift          pgtype.Text   `json:"work_shift" gorm:"work_shift"`
 	LocationLat        pgtype.Float8 `json:"location_lat" gorm:"location_lat"`
 	LocationLon        pgtype.Float8 `json:"location_lon" gorm:"location_lon"`
 	Visa               pgtype.Bool   `json:"visa" gorm:"visa"`
@@ -123,21 +123,22 @@ type Role struct {
 }
 
 type UserProfileEditRequest struct {
-	LastName                    string                 `json:"last_name" form:"last_name" validate:"required"`
-	FirstName                   string                 `json:"first_name" form:"first_name" validate:"required"`
-	PhoneNumberCountry          string                 `json:"phone_number_country" form:"phone_number_country" validate:"required"`
-	PhoneNumber                 string                 `json:"phone" form:"phone" validate:"required"`
-	CurrentLocation             string                 `json:"current_location" form:"current_location" validate:"required"`
-	LocationLon                 string                 `json:"location_lon" form:"location_lon"`
-	LocationLat                 string                 `json:"location_lat" form:"location_lat"`
-	AddressComponentsSerialized string                 `json:"address_components_serialized" form:"address_components_serialized"`
-	WorkEligibility             map[string]string      `json:"work_eligibility" form:"work_eligibility"`
-	AboutMe                     string                 `json:"about_me" form:"about_me"`
-	CurrentRole                 string                 `json:"current_role" form:"current_role"`
-	StartDate                   string                 `json:"start_date" form:"start_date"`
-	WorkShift                   map[string]interface{} `json:"work_shift" form:"work_shift"`
-	PrivacySetting              string                 `json:"privacy_setting" form:"privacy_setting"`
-	Resume                      multipart.FileHeader   `json:"resume" form:"resume"`
+	LastName                    string               `json:"last_name" form:"last_name" validate:"required"`
+	FirstName                   string               `json:"first_name" form:"first_name" validate:"required"`
+	PhoneNumberCountry          string               `json:"phone_number_country" form:"phone_number_country" validate:"required"`
+	PhoneNumber                 string               `json:"phone" form:"phone" validate:"required"`
+	CurrentLocation             string               `json:"current_location" form:"current_location" validate:"required"`
+	LocationLon                 string               `json:"location_lon" form:"location_lon"`
+	LocationLat                 string               `json:"location_lat" form:"location_lat"`
+	AddressComponentsSerialized string               `json:"address_components_serialized" form:"address_components_serialized"`
+	WorkEligibility             string               `json:"work_eligibility" form:"work_eligibility"`
+	AboutMe                     string               `json:"about_me" form:"about_me"`
+	CurrentRole                 string               `json:"current_role" form:"current_role"`
+	StartDate                   string               `json:"start_date" form:"start_date"`
+	WorkShift                   string               `json:"work_shift" form:"work_shift"`
+	PrivacySetting              string               `json:"privacy_setting" form:"privacy_setting"`
+	Visa                        bool                 `json:"visa" form:"visa"`
+	Resume                      multipart.FileHeader `json:"resume" form:"resume"`
 }
 
 type UserProfileCreateRequest struct {
@@ -158,12 +159,11 @@ type GetCandidateProfilesResponse struct {
 	Address            string      `json:"address"`
 	CurrentLocation    string      `json:"current_location"`
 	PrivacySetting     string      `json:"privacy_setting"`
-	WorkEligibility    interface{} `json:"work_eligibility"`
 	ResumeLink         string      `json:"resume_link"`
 	Resume             string      `json:"resume"`
 	CurrentRole        string      `json:"current_role"`
 	WorkWhenever       pgtype.Bool `json:"work_whenever"`
-	WorkShift          interface{} `json:"work_shift"`
+	WorkShift          string      `json:"work_shift"`
 	LocationLat        float64     `json:"location_lat"`
 	LocationLon        float64     `json:"location_lon"`
 	Visa               pgtype.Bool `json:"visa"`

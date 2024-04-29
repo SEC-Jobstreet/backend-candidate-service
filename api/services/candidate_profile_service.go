@@ -17,7 +17,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type CandidateProfileService interface {
@@ -37,73 +36,6 @@ func NewCandidateProfileService(store db.Store, awsHandler *externals.AWSHandler
 		store:      store,
 		awsHandler: awsHandler,
 		config:     config,
-	}
-}
-
-func (s *candidateProfileService) initData() models.ProfileResponse {
-	return models.ProfileResponse{
-		ProfileUpdated: true,
-		Profile: models.Profile{
-			GivenName:       "Thuận",
-			SurName:         "Nguyễn",
-			PhoneNumber:     "+84337256835",
-			CurrentLocation: "Quận 5, Thành phố Hồ Chí Minh, VN",
-			PrivacySetting:  "STANDARD",
-			WorkEligibility: map[string]string{"VN": "ELIGIBLE"},
-			Resume:          "CV-NGUYEN-HUYNH-MINH-THUAN.pdf",
-			CurrentRole:     "Developer",
-			ShiftAvailability: models.ShiftAvailability{
-				AnyTimeShiftAvailability: true,
-				SpecificShiftAvailability: map[string]models.ShiftTimes{
-					"all":       {Morning: false, Afternoon: false, Evening: false},
-					"monday":    {Morning: true, Afternoon: true, Evening: true},
-					"tuesday":   {Morning: true, Afternoon: true, Evening: true},
-					"wednesday": {Morning: true, Afternoon: true, Evening: true},
-					"thursday":  {Morning: true, Afternoon: true, Evening: true},
-					"friday":    {Morning: true, Afternoon: true, Evening: true},
-					"saturday":  {Morning: true, Afternoon: true, Evening: true},
-					"sunday":    {Morning: true, Afternoon: true, Evening: true},
-				},
-			},
-			CreatedAt:                  time.Now(), // Placeholder, adjust as needed
-			UpdatedAt:                  time.Now(), // Placeholder, adjust as needed
-			CurrentLocationCoordinates: models.Coordinates{Lat: 10.7628356, Long: 106.6824824},
-			CandidateId:                "11550913",
-			Email:                      "nguyenthuanit265@gmail.com",
-			PhoneNumberCountryAlpha2:   "VN",
-		},
-		MetaTitle: "Hồ sơ cá nhân | JobStreet",
-		Site: models.Site{
-			ID:    "vn",
-			Hosts: []string{"www.jobstreet.vn", "vn.seek.com"},
-			Country: models.Country{
-				IsoCode:         "VN",
-				Name:            "Vietnam",
-				NameWithArticle: "Vietnam",
-				LanguageTags:    []string{"vi-VN"},
-			},
-			Brand: models.Brand{
-				ID:            "JOBST",
-				Name:          "JobStreet",
-				CopyrightName: "Job Seeker Pty Ltd",
-			},
-			Analytics: models.Analytics{
-				Prod:    "G-WVKCLLK2L1",
-				Sandbox: "G-ZXE1FEGS1B",
-			},
-		},
-		IndustriesAndRoles: []models.IndustryAndRole{
-			{
-				Value:       "other",
-				DisplayName: "NA",
-				Roles: []models.Role{
-					{
-						Value:       "other",
-						DisplayName: "NA",
-					},
-				},
-			},
-		},
 	}
 }
 
@@ -133,8 +65,6 @@ func (s *candidateProfileService) GetProfile(ctx *gin.Context) (models.GetCandid
 
 	marshal, _ := json.Marshal(profiles[0])
 	json.Unmarshal(marshal, &response)
-	json.Unmarshal(profiles[0].WorkEligibility, &response.WorkEligibility)
-	json.Unmarshal(profiles[0].WorkShift, &response.WorkShift)
 	return response, nil
 }
 
@@ -226,10 +156,8 @@ func (s *candidateProfileService) UpdateProfile(ctx *gin.Context, req models.Use
 	if len(strings.TrimSpace(req.PrivacySetting)) > 0 {
 		reqUpdate.PrivacySetting = pgtype.Text{String: req.PrivacySetting, Valid: true}
 	}
-	workShiftByte, _ := json.Marshal(req.WorkShift)
-	workEligibilityByte, _ := json.Marshal(req.WorkEligibility)
-	reqUpdate.WorkShift = workShiftByte
-	reqUpdate.WorkEligibility = workEligibilityByte
+	reqUpdate.WorkShift = pgtype.Text{String: req.WorkShift, Valid: true}
+	reqUpdate.Visa = pgtype.Bool{Bool: req.Visa, Valid: true}
 
 	// Upload resume
 	file, errGetFile := ctx.FormFile("resume")
