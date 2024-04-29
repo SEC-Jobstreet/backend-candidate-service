@@ -4,10 +4,10 @@ docker_compose_build:
 	docker-compose build
 
 docker_build:
-	docker buildx build -t thanhquy1105/backend-jobstreet-candidate-service-prod:latest .
+	docker buildx build -t nguyenthuanit265/backend-jobstreet-candidate-service-prod:latest .
 
 docker_push:
-	docker push thanhquy1105/backend-jobstreet-candidate-service-prod
+	docker push nguyenthuanit265/backend-jobstreet-candidate-service-prod
 
 docker_build_run:
 	docker-compose up
@@ -25,7 +25,7 @@ start_postgres:
 	docker start postgres
 
 build_app:
-	docker build -t thanhquy1105/backend-jobstreet-candidate-service-prod:latest .
+	docker build -t nguyenthuanit265/backend-jobstreet-candidate-service-prod:latest .
 
 run_app:
 	docker run --name backend-jobstreet-candidate-service-prod --network candidate-network -p 4000:4000 -e DB_SOURCE="postgresql://admin:admin@postgres:5432/candidate_service_jobstreet?sslmode=disable" thanhquy1105/backend-jobstreet-candidate-service-prod:latest
@@ -34,7 +34,7 @@ start_app:
 	docker start backend-jobstreet-candidate-service-prod
 
 push_app:
-	docker push thanhquy1105/backend-jobstreet-candidate-service-prod
+	docker push nguyenthuanit265/backend-jobstreet-candidate-service-prod
 
 # create candidate_service_jobstreet database on postgres container
 createdb:

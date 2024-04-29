@@ -15,6 +15,7 @@ CREATE TABLE "candidate_profile"
     "privacy_setting"      VARCHAR(50),
     "work_eligibility"     JSONB,
     "resume_link"          TEXT,
+    "resume"               TEXT,
     "current_role"         VARCHAR(100),
     "work_whenever"        BOOLEAN,
     "work_shift"           JSONB,
@@ -30,7 +31,7 @@ CREATE TABLE "candidate_profile"
 );
 
 CREATE INDEX ON "candidate_profile" ("google_id");
-CREATE UNIQUE INDEX ON "candidate_profile" ("email");
+-- CREATE UNIQUE INDEX ON "candidate_profile" ("email");
 
 -- ALTER TABLE "applications"
 --     ADD CONSTRAINT "candidate_job_key" UNIQUE ("candidate_id", "job_id");

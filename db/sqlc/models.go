@@ -26,6 +26,7 @@ type CandidateProfile struct {
 	PrivacySetting     pgtype.Text   `json:"privacy_setting"`
 	WorkEligibility    []byte        `json:"work_eligibility"`
 	ResumeLink         pgtype.Text   `json:"resume_link"`
+	Resume             pgtype.Text   `json:"resume"`
 	CurrentRole        pgtype.Text   `json:"current_role"`
 	WorkWhenever       pgtype.Bool   `json:"work_whenever"`
 	WorkShift          []byte        `json:"work_shift"`

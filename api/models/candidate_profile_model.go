@@ -12,28 +12,29 @@ type CandidateProfile struct {
 	Email              pgtype.Text   `json:"email" gorm:"column:email"`
 	FirstName          pgtype.Text   `json:"first_name" gorm:"column:first_name"`
 	LastName           pgtype.Text   `json:"last_name" gorm:"column:last_name"`
-	ProfileImage       pgtype.Text   `json:"profile_image" json:"profile_image"`
-	FirstNameProfile   pgtype.Text   `json:"first_name_profile" json:"first_name_profile"`
-	LastNameProfile    pgtype.Text   `json:"last_name_profile" json:"last_name_profile"`
+	ProfileImage       pgtype.Text   `json:"profile_image" gorm:"profile_image"`
+	FirstNameProfile   pgtype.Text   `json:"first_name_profile" gorm:"first_name_profile"`
+	LastNameProfile    pgtype.Text   `json:"last_name_profile" gorm:"last_name_profile"`
 	Phone              pgtype.Text   `json:"phone" gorm:"column:phone"`
 	PhoneNumberCountry pgtype.Text   `json:"phone_number_country" gorm:"column:phone_number_country"`
 	Address            pgtype.Text   `json:"address" gorm:"column:address"`
 	CurrentLocation    pgtype.Text   `json:"current_location" gorm:"column:current_location"`
-	PrivacySetting     pgtype.Text   `json:"privacy_setting" json:"privacy_setting"`
-	WorkEligibility    []byte        `json:"work_eligibility" json:"work_eligibility"`
-	ResumeLink         pgtype.Text   `json:"resume_link" json:"resume_link"`
-	CurrentRole        pgtype.Text   `json:"current_role" json:"current_role"`
-	WorkWhenever       pgtype.Bool   `json:"work_whenever" json:"work_whenever"`
-	WorkShift          []byte        `json:"work_shift" json:"work_shift"`
-	LocationLat        pgtype.Float8 `json:"location_lat" json:"location_lat"`
-	LocationLon        pgtype.Float8 `json:"location_lon" json:"location_lon"`
-	Visa               pgtype.Bool   `json:"visa" json:"visa"`
-	Description        pgtype.Text   `json:"description" json:"description"`
-	Position           pgtype.Text   `json:"position" json:"position"`
-	StartDate          pgtype.Date   `json:"start_date" json:"start_date"`
-	ShareProfile       pgtype.Bool   `json:"share_profile" json:"share_profile"`
-	UpdatedAt          time.Time     `json:"updated_at" json:"updated_at"`
-	CreatedAt          time.Time     `json:"created_at" json:"created_at"`
+	PrivacySetting     pgtype.Text   `json:"privacy_setting" gorm:"privacy_setting"`
+	WorkEligibility    []byte        `json:"work_eligibility" gorm:"work_eligibility"`
+	ResumeLink         pgtype.Text   `json:"resume_link" gorm:"resume_link"`
+	Resume             pgtype.Text   `json:"resume" gorm:"resume"`
+	CurrentRole        pgtype.Text   `json:"current_role" gorm:"current_role"`
+	WorkWhenever       pgtype.Bool   `json:"work_whenever" gorm:"work_whenever"`
+	WorkShift          []byte        `json:"work_shift" gorm:"work_shift"`
+	LocationLat        pgtype.Float8 `json:"location_lat" gorm:"location_lat"`
+	LocationLon        pgtype.Float8 `json:"location_lon" gorm:"location_lon"`
+	Visa               pgtype.Bool   `json:"visa" gorm:"visa"`
+	Description        pgtype.Text   `json:"description" gorm:"description"`
+	Position           pgtype.Text   `json:"position" gorm:"position"`
+	StartDate          pgtype.Date   `json:"start_date" gorm:"start_date"`
+	ShareProfile       pgtype.Bool   `json:"share_profile" gorm:"share_profile"`
+	UpdatedAt          time.Time     `json:"updated_at" gorm:"updated_at"`
+	CreatedAt          time.Time     `json:"created_at" gorm:"created_at"`
 }
 
 func (CandidateProfile) TableName() string {
@@ -159,6 +160,7 @@ type GetCandidateProfilesResponse struct {
 	PrivacySetting     string      `json:"privacy_setting"`
 	WorkEligibility    interface{} `json:"work_eligibility"`
 	ResumeLink         string      `json:"resume_link"`
+	Resume             string      `json:"resume"`
 	CurrentRole        string      `json:"current_role"`
 	WorkWhenever       pgtype.Bool `json:"work_whenever"`
 	WorkShift          interface{} `json:"work_shift"`

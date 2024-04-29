@@ -257,6 +257,7 @@ func (s *candidateProfileService) UpdateProfile(ctx *gin.Context, req models.Use
 		return &models.AppError{Error: err2, Code: http.StatusInternalServerError}
 	}
 	reqUpdate.ResumeLink = pgtype.Text{String: location, Valid: true}
+	reqUpdate.Resume = pgtype.Text{String: originalFileName, Valid: true}
 
 	// Trigger save user
 	if len(strings.TrimSpace(profileFromDB.UserID)) == 0 {
