@@ -25,9 +25,9 @@ func (s *Server) setupRouter() {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	authRoutes := router.Group("/api/v1").Use(middleware.IsAuthorizedJWT(&s.config))
+	authRoutes := router.Group("/api/v1")
 
-	authRoutes.POST("/apply_job", s.example)
+	authRoutes.POST("/profile", middleware.AuthMiddleware(s.config, []string{"candidates"}), s.example)
 
 	s.router = router
 }
