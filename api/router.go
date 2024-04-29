@@ -27,7 +27,10 @@ func (s *Server) setupRouter() {
 
 	authRoutes := router.Group("/api/v1")
 
-	authRoutes.POST("/profile", middleware.AuthMiddleware(s.config, []string{"candidates"}), s.example)
+	authRoutes.POST("/create_profile", middleware.AuthMiddleware(s.config, []string{"candidates"}), s.CreateProfile)
+	authRoutes.PUT("/update_profile", middleware.AuthMiddleware(s.config, []string{"candidates"}), s.UpdateProfile)
+	authRoutes.GET("/profile", middleware.AuthMiddleware(s.config, []string{"candidates"}), s.GetProfileByCandidate)
+	authRoutes.GET("/profile_by_employer/:id", middleware.AuthMiddleware(s.config, []string{"employers"}), s.GetProfileByEmployer)
 
 	s.router = router
 }

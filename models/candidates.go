@@ -1,14 +1,11 @@
 package models
 
 import (
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Candidates struct {
-	ID uuid.UUID `gorm:"primarykey" json:"id"`
-
-	Username string `gorm:"not null; index:username,unique"`
+	Username string `gorm:"primarykey; not null; index:username,unique" json:"username"`
 
 	FirstName    string `gorm:"not null" json:"first_name"`
 	LastName     string `gorm:"not null" json:"last_name"`
@@ -28,6 +25,7 @@ type Candidates struct {
 
 	ShareProfile bool
 	ResumeLink   string
+	ResumeName   string
 
 	UpdatedAt int64 `gorm:"autoUpdateTime"`
 	CreatedAt int64 `gorm:"autoCreateTime"`

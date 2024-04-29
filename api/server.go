@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/SEC-Jobstreet/backend-candidate-service/externals"
 	"github.com/SEC-Jobstreet/backend-candidate-service/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -17,13 +18,18 @@ type Server struct {
 	config utils.Config
 	store  *gorm.DB
 	router *gin.Engine
+	media  *externals.AWSHandler
 }
 
 // NewServer creates a new HTTP server and setup routing.
-func NewServer(config utils.Config, store *gorm.DB) (*Server, error) {
+func NewServer(config utils.Config, store *gorm.DB, awsHandler *externals.AWSHandler) (*Server, error) {
+
+	awsHandler.Init(config)
+
 	server := &Server{
 		config: config,
 		store:  store,
+		media:  awsHandler,
 	}
 
 	server.setupRouter()

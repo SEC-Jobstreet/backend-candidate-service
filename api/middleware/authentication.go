@@ -47,10 +47,10 @@ type JWK struct {
 	} `json:"keys"`
 }
 
-func NewAuth(config utils.Config) *Auth {
+func NewAuth(cognitoRegion, cognitoUserPoolID string) *Auth {
 	a := &Auth{
-		cognitoRegion:     config.CognitoRegion,
-		cognitoUserPoolID: config.CognitoUserPoolID,
+		cognitoRegion:     cognitoRegion,
+		cognitoUserPoolID: cognitoUserPoolID,
 	}
 
 	a.jwkURL = fmt.Sprintf("https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json", a.cognitoRegion, a.cognitoUserPoolID)
@@ -154,7 +154,14 @@ func AuthMiddleware(config utils.Config, accessibleRoles []string) gin.HandlerFu
 		accessToken := fields[1]
 
 		// Validate token cognito
-		auth := NewAuth(config)
+
+		var auth *Auth
+		if len(accessibleRoles) == 0 && accessibleRoles[0] == "employers" {
+			auth = NewAuth(config.CognitoRegionEmployers, config.CognitoUserPoolIDEmployers)
+		} else {
+			auth = NewAuth(config.CognitoRegionCandidates, config.CognitoUserPoolIDCandidates)
+		}
+
 		err := auth.CacheJWK()
 		if err != nil {
 			err := fmt.Errorf("AuthMiddleware - Error cacheJWK, error = %v", err)

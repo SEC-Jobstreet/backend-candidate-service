@@ -9,6 +9,7 @@ import (
 
 	"github.com/SEC-Jobstreet/backend-candidate-service/api"
 	_ "github.com/SEC-Jobstreet/backend-candidate-service/docs"
+	"github.com/SEC-Jobstreet/backend-candidate-service/externals"
 	"github.com/SEC-Jobstreet/backend-candidate-service/models"
 	"github.com/SEC-Jobstreet/backend-candidate-service/utils"
 	"gorm.io/driver/postgres"
@@ -56,9 +57,11 @@ func main() {
 		log.Fatal().Msg("could not migrate db")
 	}
 
+	awsHandler := externals.NewAWSHandler()
+
 	waitGroup, ctx := errgroup.WithContext(ctx)
 
-	runGinServer(ctx, waitGroup, config, store)
+	runGinServer(ctx, waitGroup, config, store, awsHandler)
 
 	err = waitGroup.Wait()
 	if err != nil {
@@ -66,8 +69,8 @@ func main() {
 	}
 }
 
-func runGinServer(ctx context.Context, waitGroup *errgroup.Group, config utils.Config, store *gorm.DB) {
-	ginServer, err := api.NewServer(config, store)
+func runGinServer(ctx context.Context, waitGroup *errgroup.Group, config utils.Config, store *gorm.DB, awsHandler *externals.AWSHandler) {
+	ginServer, err := api.NewServer(config, store, awsHandler)
 	if err != nil {
 		log.Fatal().Msg("cannot create server")
 	}
