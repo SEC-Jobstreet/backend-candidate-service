@@ -153,10 +153,12 @@ func AuthMiddleware(config utils.Config, accessibleRoles []string) gin.HandlerFu
 		}
 		accessToken := fields[1]
 
+		fmt.Println(accessToken)
 		// Validate token cognito
 
 		var auth *Auth
-		if len(accessibleRoles) == 0 && accessibleRoles[0] == "employers" {
+		if len(accessibleRoles) == 0 || accessibleRoles[0] == "employers" {
+			fmt.Println("employers")
 			auth = NewAuth(config.CognitoRegionEmployers, config.CognitoUserPoolIDEmployers)
 		} else {
 			auth = NewAuth(config.CognitoRegionCandidates, config.CognitoUserPoolIDCandidates)

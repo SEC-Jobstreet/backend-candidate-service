@@ -37,7 +37,7 @@ type ProfileCreationRequest struct {
 	WorkShift    string `form:"work_shift"`
 
 	ShareProfile *bool                `form:"share_profile" binding:"required"`
-	Resume       multipart.FileHeader `form:"resume" binding:"required"`
+	Resume       multipart.FileHeader `form:"resume"`
 }
 
 func (s *Server) CreateProfile(ctx *gin.Context) {
@@ -103,29 +103,29 @@ func (s *Server) CreateProfile(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, profile)
 }
 
-type ProfileUpdateRequest struct {
-	FirstName    string `form:"first_name"`
-	LastName     string `form:"last_name"`
-	CountryPhone string `form:"country_phone"`
-	Phone        string `form:"phone"`
-	Address      string `form:"address"`
-	Latitude     string `form:"latitude"`
-	Longitude    string `form:"longitude"`
-	Visa         *bool  `form:"visa"`
-	Description  string `form:"description"`
+// type ProfileUpdateRequest struct {
+// 	FirstName    string `form:"first_name"`
+// 	LastName     string `form:"last_name"`
+// 	CountryPhone string `form:"country_phone"`
+// 	Phone        string `form:"phone"`
+// 	Address      string `form:"address"`
+// 	Latitude     string `form:"latitude"`
+// 	Longitude    string `form:"longitude"`
+// 	Visa         *bool  `form:"visa"`
+// 	Description  string `form:"description"`
 
-	CurrentPosition string `form:"current_position"`
-	StartDate       int64  `form:"start_date"`
+// 	CurrentPosition string `form:"current_position"`
+// 	StartDate       int64  `form:"start_date"`
 
-	WorkWhenever *bool  `form:"work_whenever"`
-	WorkShift    string `form:"work_shift"`
+// 	WorkWhenever *bool  `form:"work_whenever"`
+// 	WorkShift    string `form:"work_shift"`
 
-	ShareProfile *bool                `form:"share_profile"`
-	Resume       multipart.FileHeader `form:"resume"`
-}
+// 	ShareProfile *bool                `form:"share_profile"`
+// 	Resume       multipart.FileHeader `form:"resume"`
+// }
 
 func (s *Server) UpdateProfile(ctx *gin.Context) {
-	var form ProfileUpdateRequest
+	var form ProfileCreationRequest
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
 		return
@@ -139,21 +139,12 @@ func (s *Server) UpdateProfile(ctx *gin.Context) {
 
 	profile := map[string]interface{}{}
 
-	if len(strings.TrimSpace(form.FirstName)) > 0 {
-		profile["first_name"] = form.FirstName
-	}
-	if len(strings.TrimSpace(form.LastName)) > 0 {
-		profile["last_name"] = form.LastName
-	}
-	if len(strings.TrimSpace(form.CountryPhone)) > 0 {
-		profile["country_phone"] = form.CountryPhone
-	}
-	if len(strings.TrimSpace(form.Phone)) > 0 {
-		profile["phone"] = form.Phone
-	}
-	if len(strings.TrimSpace(form.Address)) > 0 {
-		profile["address"] = form.Address
-	}
+	profile["first_name"] = form.FirstName
+	profile["last_name"] = form.LastName
+	profile["country_phone"] = form.CountryPhone
+	profile["phone"] = form.Phone
+	profile["address"] = form.Address
+
 	if len(strings.TrimSpace(form.Latitude)) > 0 {
 		profile["latitude"] = form.Latitude
 	}
@@ -161,9 +152,7 @@ func (s *Server) UpdateProfile(ctx *gin.Context) {
 		profile["longitude"] = form.Longitude
 	}
 
-	if form.Visa != nil {
-		profile["visa"] = *form.Visa
-	}
+	profile["visa"] = *form.Visa
 	if len(strings.TrimSpace(form.Description)) > 0 {
 		profile["description"] = form.Description
 	}
@@ -173,14 +162,10 @@ func (s *Server) UpdateProfile(ctx *gin.Context) {
 	if form.StartDate != 0 {
 		profile["start_date"] = form.StartDate
 	}
-	if form.WorkWhenever != nil {
-		profile["work_whenever"] = *form.WorkWhenever
-	}
+	profile["work_whenever"] = *form.WorkWhenever
 	profile["work_shift"] = form.WorkShift
 
-	if form.ShareProfile != nil {
-		profile["share_profile"] = *form.ShareProfile
-	}
+	profile["share_profile"] = *form.ShareProfile
 
 	if form.Resume.Size != 0 && form.Resume.Filename != "" {
 		originalFileName := form.Resume.Filename
