@@ -2,12 +2,9 @@ basePath: /api/v1
 definitions:
   api.applyRequest:
     properties:
-      candidate_id:
-        type: integer
       job_id:
-        type: integer
+        type: string
     required:
-    - candidate_id
     - job_id
     type: object
   api.applyResponse:
@@ -15,43 +12,93 @@ definitions:
       status:
         type: string
     type: object
+  api.listApplicationsResponse:
+    properties:
+      applications:
+        items:
+          $ref: '#/definitions/models.Applications'
+        type: array
+      page_id:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
   api.updateStatusRequest:
     properties:
-      application_id:
-        type: integer
-      message:
+      id:
         type: string
       status:
         type: string
     required:
-    - application_id
+    - id
     - status
     type: object
-  db.Application:
+  models.Applications:
     properties:
-      candidate_id:
-        type: integer
-      created_at:
+      candidateID:
         type: string
+      createdAt:
+        type: integer
       id:
-        type: integer
-      job_id:
-        type: integer
-      message:
+        type: string
+      jobID:
         type: string
       status:
         type: string
-      updated_at:
+      updatedAt:
+        type: integer
+    type: object
+  models.Candidates:
+    properties:
+      address:
         type: string
+      countryPhone:
+        type: string
+      createdAt:
+        type: integer
+      currentPosition:
+        type: string
+      description:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      latitude:
+        type: string
+      longitude:
+        type: string
+      phone:
+        type: string
+      resumeLink:
+        type: string
+      resumeName:
+        type: string
+      shareProfile:
+        type: boolean
+      startDate:
+        type: integer
+      updatedAt:
+        type: integer
+      username:
+        type: string
+      visa:
+        type: boolean
+      workShift:
+        type: string
+      workWhenever:
+        type: boolean
     type: object
 host: localhost:4000
 info:
   contact: {}
-  description: This is a Application Service Server.
-  title: Application Service API
+  description: This is a candidate Service Server.
+  title: candidatee Service API
   version: "1.0"
 paths:
-  /application/{application_id}:
+  /application_by_employer/{application_id}:
     get:
       consumes:
       - application/json
@@ -68,11 +115,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/db.Application'
+            $ref: '#/definitions/models.Applications'
       summary: Get Application
       tags:
       - application
-  /application_list:
+  /application_list_by_employer:
     get:
       consumes:
       - application/json
@@ -80,10 +127,10 @@ paths:
       parameters:
       - in: query
         name: candidate_id
-        type: integer
+        type: string
       - in: query
         name: job_id
-        type: integer
+        type: string
       - in: query
         minimum: 1
         name: page_id
@@ -105,7 +152,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/db.Application'
+              $ref: '#/definitions/api.listApplicationsResponse'
             type: array
       summary: List Applications
       tags:
@@ -132,6 +179,93 @@ paths:
       summary: Apply Job
       tags:
       - application
+  /candidates/{candidate_id}/profile:
+    get:
+      consumes:
+      - application/json
+      description: get profile details for a specific candidate
+      parameters:
+      - description: Candidate ID
+        in: path
+        name: candidate_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Candidates'
+      summary: Get profile by candidate
+      tags:
+      - candidates
+  /create_profile:
+    post:
+      consumes:
+      - multipart/form-data
+      description: create profile for a specific candidate
+      parameters:
+      - description: Candidate ID
+        in: path
+        name: candidate_id
+        required: true
+        type: integer
+      - description: Start Date
+        in: formData
+        name: start_date
+        required: true
+        type: integer
+      - description: Work Whenever
+        in: formData
+        name: work_whenever
+        required: true
+        type: boolean
+      - description: Work Shift
+        in: formData
+        name: work_shift
+        type: string
+      - description: Share Profile
+        in: formData
+        name: share_profile
+        required: true
+        type: boolean
+      - description: Resume
+        in: formData
+        name: resume
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Candidates'
+      summary: Create profile
+      tags:
+      - candidates
+  /employers/{employer_id}/profile:
+    get:
+      consumes:
+      - application/json
+      description: get profile details for a specific employer
+      parameters:
+      - description: Employer ID
+        in: path
+        name: employer_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Candidates'
+      summary: Get profile by employer
+      tags:
+      - employers
   /update_status:
     put:
       consumes:
@@ -150,7 +284,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/db.Application'
+            $ref: '#/definitions/models.Applications'
       summary: Update tags
       tags:
       - application

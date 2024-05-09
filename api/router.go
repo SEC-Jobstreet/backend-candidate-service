@@ -27,10 +27,18 @@ func (s *Server) setupRouter() {
 
 	authRoutes := router.Group("/api/v1")
 
+	//Candidate
 	authRoutes.POST("/create_profile", middleware.AuthMiddleware(s.config, []string{"candidates"}), s.CreateProfile)
 	authRoutes.PUT("/update_profile", middleware.AuthMiddleware(s.config, []string{"candidates"}), s.UpdateProfile)
 	authRoutes.GET("/profile", middleware.AuthMiddleware(s.config, []string{"candidates"}), s.GetProfileByCandidate)
 	authRoutes.GET("/profile_by_employer/:id", middleware.AuthMiddleware(s.config, []string{"employers"}), s.GetProfileByEmployer)
+
+	//Application
+	authRoutes.POST("/apply_job", middleware.AuthMiddleware(s.config, []string{"candidates"}), s.apply)
+	authRoutes.GET("/application_list_by_employer", middleware.AuthMiddleware(s.config, []string{"employers"}), s.listApplicationsByEmployer)
+	authRoutes.GET("/application_number_by_job_id/:job_id", middleware.AuthMiddleware(s.config, []string{"employers"}), s.getApplicationNumberByJobId)
+	authRoutes.GET("/application/:application_id", middleware.AuthMiddleware(s.config, []string{"employers"}), s.getApplicationByEmployer)
+	authRoutes.PUT("/update_status", middleware.AuthMiddleware(s.config, []string{"employers"}), s.updateStatus)
 
 	s.router = router
 }

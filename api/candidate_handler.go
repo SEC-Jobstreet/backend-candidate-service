@@ -14,11 +14,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *Server) example(ctx *gin.Context) {
-
-	ctx.JSON(http.StatusOK, "OK")
-}
-
 type ProfileCreationRequest struct {
 	FirstName    string `form:"first_name" binding:"required"`
 	LastName     string `form:"last_name" binding:"required"`
@@ -36,10 +31,20 @@ type ProfileCreationRequest struct {
 	WorkWhenever *bool  `form:"work_whenever" binding:"required"`
 	WorkShift    string `form:"work_shift"`
 
-	ShareProfile *bool                `form:"share_profile" binding:"required"`
-	Resume       multipart.FileHeader `form:"resume"`
+	ShareProfile *bool `form:"share_profile" binding:"required"`
+	// swagger:ignore
+	Resume multipart.FileHeader `form:"resume"`
 }
 
+// @Summary Create profile
+// @Description create profile for a specific candidate
+// @Tags candidates
+// @Accept  multipart/form-data
+// @Produce  json
+// @Param candidate_id path int true "Candidate ID"
+// @Param profile formData ProfileCreationRequest true "Profile data"
+// @Success 200 {object} models.Candidates
+// @Router /create_profile [post]
 func (s *Server) CreateProfile(ctx *gin.Context) {
 	var form ProfileCreationRequest
 	// This will infer what binder to use depending on the content-type header.
@@ -103,27 +108,15 @@ func (s *Server) CreateProfile(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, profile)
 }
 
-// type ProfileUpdateRequest struct {
-// 	FirstName    string `form:"first_name"`
-// 	LastName     string `form:"last_name"`
-// 	CountryPhone string `form:"country_phone"`
-// 	Phone        string `form:"phone"`
-// 	Address      string `form:"address"`
-// 	Latitude     string `form:"latitude"`
-// 	Longitude    string `form:"longitude"`
-// 	Visa         *bool  `form:"visa"`
-// 	Description  string `form:"description"`
-
-// 	CurrentPosition string `form:"current_position"`
-// 	StartDate       int64  `form:"start_date"`
-
-// 	WorkWhenever *bool  `form:"work_whenever"`
-// 	WorkShift    string `form:"work_shift"`
-
-// 	ShareProfile *bool                `form:"share_profile"`
-// 	Resume       multipart.FileHeader `form:"resume"`
-// }
-
+// @Summary Update profile
+// @Description update profile for a specific candidate
+// @Tags candidates
+// @Accept  json
+// @Produce  json
+// @Param candidate_id path int true "Candidate ID"
+// @Param profile body ProfileCreationRequest true "Profile data"
+// @Success 200 {object} models.Candidates
+// @Router /update_profile [put]
 func (s *Server) UpdateProfile(ctx *gin.Context) {
 	var form ProfileCreationRequest
 	if err := ctx.ShouldBind(&form); err != nil {
@@ -198,6 +191,14 @@ func (s *Server) UpdateProfile(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, profile)
 }
 
+// @Summary Get profile by candidate
+// @Description get profile details for a specific candidate
+// @Tags candidates
+// @Accept  json
+// @Produce  json
+// @Param candidate_id path int true "Candidate ID"
+// @Success 200 {object} models.Candidates
+// @Router /candidates/{candidate_id}/profile [get]
 func (s *Server) GetProfileByCandidate(ctx *gin.Context) {
 
 	currentUser, err := utils.GetCurrentUser(ctx)
@@ -226,6 +227,14 @@ type ProfileCandidateByEmployerRequest struct {
 	Username string `uri:"id" binding:"required"`
 }
 
+// @Summary Get profile by employer
+// @Description get profile details for a specific employer
+// @Tags employers
+// @Accept  json
+// @Produce  json
+// @Param employer_id path int true "Employer ID"
+// @Success 200 {object} models.Candidates
+// @Router /employers/{employer_id}/profile [get]
 func (s *Server) GetProfileByEmployer(ctx *gin.Context) {
 
 	var req ProfileCandidateByEmployerRequest

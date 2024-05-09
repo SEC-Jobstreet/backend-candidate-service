@@ -1,15 +1,15 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a Application Service Server.",
-        "title": "Application Service API",
+        "description": "This is a candidate Service Server.",
+        "title": "candidatee Service API",
         "contact": {},
         "version": "1.0"
     },
     "host": "localhost:4000",
     "basePath": "/api/v1",
     "paths": {
-        "/application/{application_id}": {
+        "/application_by_employer/{application_id}": {
             "get": {
                 "description": "get application by id",
                 "consumes": [
@@ -35,13 +35,13 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/db.Application"
+                            "$ref": "#/definitions/models.Applications"
                         }
                     }
                 }
             }
         },
-        "/application_list": {
+        "/application_list_by_employer": {
             "get": {
                 "description": "get Applications",
                 "consumes": [
@@ -56,12 +56,12 @@
                 "summary": "List Applications",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "name": "candidate_id",
                         "in": "query"
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "name": "job_id",
                         "in": "query"
                     },
@@ -92,7 +92,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/db.Application"
+                                "$ref": "#/definitions/api.listApplicationsResponse"
                             }
                         }
                     }
@@ -133,6 +133,136 @@
                 }
             }
         },
+        "/candidates/{candidate_id}/profile": {
+            "get": {
+                "description": "get profile details for a specific candidate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "candidates"
+                ],
+                "summary": "Get profile by candidate",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Candidate ID",
+                        "name": "candidate_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Candidates"
+                        }
+                    }
+                }
+            }
+        },
+        "/create_profile": {
+            "post": {
+                "description": "create profile for a specific candidate",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "candidates"
+                ],
+                "summary": "Create profile",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Candidate ID",
+                        "name": "candidate_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Start Date",
+                        "name": "start_date",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Work Whenever",
+                        "name": "work_whenever",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Work Shift",
+                        "name": "work_shift",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Share Profile",
+                        "name": "share_profile",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Resume",
+                        "name": "resume",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Candidates"
+                        }
+                    }
+                }
+            }
+        },
+        "/employers/{employer_id}/profile": {
+            "get": {
+                "description": "get profile details for a specific employer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employers"
+                ],
+                "summary": "Get profile by employer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Employer ID",
+                        "name": "employer_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Candidates"
+                        }
+                    }
+                }
+            }
+        },
         "/update_status": {
             "put": {
                 "description": "Update status of application",
@@ -161,7 +291,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/db.Application"
+                            "$ref": "#/definitions/models.Applications"
                         }
                     }
                 }
@@ -172,15 +302,11 @@
         "api.applyRequest": {
             "type": "object",
             "required": [
-                "candidate_id",
                 "job_id"
             ],
             "properties": {
-                "candidate_id": {
-                    "type": "integer"
-                },
                 "job_id": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
@@ -192,17 +318,34 @@
                 }
             }
         },
+        "api.listApplicationsResponse": {
+            "type": "object",
+            "properties": {
+                "applications": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Applications"
+                    }
+                },
+                "page_id": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "api.updateStatusRequest": {
             "type": "object",
             "required": [
-                "application_id",
+                "id",
                 "status"
             ],
             "properties": {
-                "application_id": {
-                    "type": "integer"
-                },
-                "message": {
+                "id": {
                     "type": "string"
                 },
                 "status": {
@@ -210,29 +353,88 @@
                 }
             }
         },
-        "db.Application": {
+        "models.Applications": {
             "type": "object",
             "properties": {
-                "candidate_id": {
-                    "type": "integer"
-                },
-                "created_at": {
+                "candidateID": {
                     "type": "string"
                 },
+                "createdAt": {
+                    "type": "integer"
+                },
                 "id": {
-                    "type": "integer"
+                    "type": "string"
                 },
-                "job_id": {
-                    "type": "integer"
-                },
-                "message": {
+                "jobID": {
                     "type": "string"
                 },
                 "status": {
                     "type": "string"
                 },
-                "updated_at": {
+                "updatedAt": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Candidates": {
+            "type": "object",
+            "properties": {
+                "address": {
                     "type": "string"
+                },
+                "countryPhone": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "currentPosition": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "string"
+                },
+                "longitude": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "resumeLink": {
+                    "type": "string"
+                },
+                "resumeName": {
+                    "type": "string"
+                },
+                "shareProfile": {
+                    "type": "boolean"
+                },
+                "startDate": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "visa": {
+                    "type": "boolean"
+                },
+                "workShift": {
+                    "type": "string"
+                },
+                "workWhenever": {
+                    "type": "boolean"
                 }
             }
         }
