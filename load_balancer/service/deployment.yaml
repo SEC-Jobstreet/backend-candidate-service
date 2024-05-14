@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jobstreet-job-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: job-service
+  template:
+    metadata:
+      labels:
+        app: job-service
+    spec:
+      containers:
+      - name: job-service
+        image: phatnguyen1812/jobsreet_candidate_service:k8s
+        ports:
+        - containerPort: 4002
+        envFrom:
+        - configMapRef:
+            name: db-config
+        volumeMounts:
+        - name: service-storage
+          mountPath: /app/storage
+      volumes:
+      - name: service-storage
+        persistentVolumeClaim:
+          claimName: service-pvc
