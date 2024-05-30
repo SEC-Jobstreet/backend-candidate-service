@@ -7,10 +7,14 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/SEC-Jobstreet/backend-candidate-service/api"
+	"github.com/EventStore/EventStore-Client-Go/esdb"
 	_ "github.com/SEC-Jobstreet/backend-candidate-service/docs"
 	"github.com/SEC-Jobstreet/backend-candidate-service/externals"
-	"github.com/SEC-Jobstreet/backend-candidate-service/models"
+	"github.com/SEC-Jobstreet/backend-candidate-service/internal/candidate/models"
+	postgres_projection "github.com/SEC-Jobstreet/backend-candidate-service/internal/candidate/projection"
+	"github.com/SEC-Jobstreet/backend-candidate-service/internal/server"
+	"github.com/SEC-Jobstreet/backend-candidate-service/pkg/eventstroredb"
+	"github.com/SEC-Jobstreet/backend-candidate-service/pkg/logger"
 	"github.com/SEC-Jobstreet/backend-candidate-service/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -59,9 +63,37 @@ func main() {
 
 	awsHandler := externals.NewAWSHandler()
 
+	appLogger := logger.NewAppLogger(&logger.Config{
+		LogLevel: "debug",
+		DevMode:  false,
+		Encoder:  "console",
+	})
+	appLogger.InitLogger()
+	appLogger.WithName("candidateService")
+
+	db, err := eventstroredb.NewEventStoreDB(eventstroredb.EventStoreConfig{
+		ConnectionString: config.EventStoreConnectionString,
+	})
+
+	if err != nil {
+		log.Fatal().Msg("could not migrate db")
+	}
+
+	defer db.Close() // nolint: errcheck
+
+	postgresProjection := postgres_projection.NewCandidateProjection(appLogger, db, store, &config)
+
+	go func() {
+		err := postgresProjection.Subscribe(ctx, []string{""}, 60, postgresProjection.ProcessEvents)
+		if err != nil {
+			log.Fatal().Msg("(candidateProjection.Subscribe)")
+			stop()
+		}
+	}()
+
 	waitGroup, ctx := errgroup.WithContext(ctx)
 
-	runGinServer(ctx, waitGroup, config, store, awsHandler)
+	runGinServer(ctx, waitGroup, appLogger, config, db, store, awsHandler)
 
 	err = waitGroup.Wait()
 	if err != nil {
@@ -69,8 +101,8 @@ func main() {
 	}
 }
 
-func runGinServer(ctx context.Context, waitGroup *errgroup.Group, config utils.Config, store *gorm.DB, awsHandler *externals.AWSHandler) {
-	ginServer, err := api.NewServer(config, store, awsHandler)
+func runGinServer(ctx context.Context, waitGroup *errgroup.Group, appLogger logger.Logger, config utils.Config, db *esdb.Client, store *gorm.DB, awsHandler *externals.AWSHandler) {
+	ginServer, err := server.NewServer(config, appLogger, db, store, awsHandler)
 	if err != nil {
 		log.Fatal().Msg("cannot create server")
 	}

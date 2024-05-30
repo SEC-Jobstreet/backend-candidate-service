@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/SEC-Jobstreet/backend-candidate-service/models"
+	"github.com/SEC-Jobstreet/backend-candidate-service/internal/candidate/models"
 )
 
 const (

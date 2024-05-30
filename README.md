@@ -7,3 +7,15 @@ This repo is Candidate Service of jobstreet application backend.
 2. ```docker push thanhquy1105/backend-jobstreet-candidate-service-prod```
 3. ```docker pull thanhquy1105/backend-jobstreet-candidate-service-prod:latest```
 4. ```docker run --name backend-jobstreet-candidate-service-prod --network jobstreet-network -p 4002:4002 -e DB_SOURCE="postgresql://admin:admin@postgres:5432/candidate_service_jobstreet?sslmode=disable" -d thanhquy1105/backend-jobstreet-candidate-service-prod:latest```
+
+## RUN
+
+1. Run eventstoreDB
+    ```make esdb```
+2. Run PostgresDB (if it's the first run)
+    ```make run_postgres```
+    ```make createdb```
+or 
+    ```docker start postgres```
+3. Run server
+    ```go run main.go```

@@ -60,4 +60,9 @@ swagger:
 test:
 	go test -v -cover -short ./...
 
-.PHONY: build_run_prod new_migrate run_postgres migrate dropdb createdb start_postgres sqlc evans swagger proto
+esdb:
+	docker run --name esdb-node -it -p 2113:2113 -p 1113:1113 \
+    	eventstore/eventstore:21.6.0-buster-slim --insecure --run-projections=All \
+    	--enable-external-tcp --enable-atom-pub-over-http
+
+.PHONY: build_run_prod new_migrate run_postgres migrate dropdb createdb start_postgres sqlc evans swagger proto esdb

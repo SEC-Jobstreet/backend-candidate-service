@@ -10,6 +10,7 @@ type Config struct {
 	Environment                 string `mapstructure:"ENVIRONMENT"`
 	RESTfulServerAddress        string `mapstructure:"RESTfulServerAddress"`
 	DBSource                    string `mapstructure:"DB_SOURCE"`
+	EventStoreConnectionString  string `mapstructure:"EventStoreConnectionString"`
 	OAuthGoogleClientId         string `mapstructure:"OAUTH_GOOGLE_CLIENT_ID"`
 	OAuthGoogleClientSecret     string `mapstructure:"OAUTH_GOOGLE_CLIENT_SECRET"`
 	OAuthGoogleCallbackUrl      string `mapstructure:"OAUTH_GOOGLE_CALLBACK_URL"`

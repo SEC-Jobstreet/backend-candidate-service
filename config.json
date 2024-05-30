@@ -2,6 +2,7 @@
   "ENVIRONMENT": "development",
   "RESTfulServerAddress": "0.0.0.0:4002",
   "DB_SOURCE": "postgresql://admin:admin@localhost:5432/candidate_service_jobstreet?sslmode=disable",
+  "EventStoreConnectionString": "esdb://localhost:2113?tls=false",
   "OAUTH_GOOGLE_CLIENT_ID": "a",
   "OAUTH_GOOGLE_CLIENT_SECRET": "a",
   "OAUTH_GOOGLE_CALLBACK_URL": "http://localhost:4002/oauth/google/callback",
