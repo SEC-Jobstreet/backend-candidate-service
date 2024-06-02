@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Environment                 string `mapstructure:"ENVIRONMENT"`
 	RESTfulServerAddress        string `mapstructure:"RESTfulServerAddress"`
+	JobServiceGRPCAddress       string `mapstructure:"JobServiceGRPCAddress"`
 	DBSource                    string `mapstructure:"DB_SOURCE"`
 	EventStoreConnectionString  string `mapstructure:"EventStoreConnectionString"`
 	OAuthGoogleClientId         string `mapstructure:"OAUTH_GOOGLE_CLIENT_ID"`

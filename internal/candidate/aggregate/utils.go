@@ -38,3 +38,22 @@ func LoadProfileAggregate(ctx context.Context, eventStore es.AggregateStore, agg
 
 	return profile, nil
 }
+
+func LoadSavedJobAggregate(ctx context.Context, eventStore es.AggregateStore, aggregateID string) (*SavedJobAggregate, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "LoadSavedJobAggregate")
+	defer span.Finish()
+	span.LogFields(log.String("AggregateID", aggregateID))
+
+	savedJob := NewSavedJobAggregateWithID(aggregateID)
+
+	err := eventStore.Exists(ctx, savedJob.GetID())
+	if err != nil && !errors.Is(err, esdb.ErrStreamNotFound) {
+		return nil, err
+	}
+
+	if err := eventStore.Load(ctx, savedJob); err != nil {
+		return nil, err
+	}
+
+	return savedJob, nil
+}

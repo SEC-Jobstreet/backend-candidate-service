@@ -12,8 +12,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (o *postgresProjection) onProfileCreate(ctx context.Context, evt es.Event) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "postgresProjection.onProfileCreate")
+func (o *postgresProjection) onProfileCreated(ctx context.Context, evt es.Event) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "postgresProjection.onProfileCreated")
 	defer span.Finish()
 	span.LogFields(log.String("AggregateID", evt.GetAggregateID()))
 
@@ -32,8 +32,8 @@ func (o *postgresProjection) onProfileCreate(ctx context.Context, evt es.Event) 
 	return nil
 }
 
-func (o *postgresProjection) onProfileUpdate(ctx context.Context, evt es.Event) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "postgresProjection.onProfileUpdate")
+func (o *postgresProjection) onProfileUpdated(ctx context.Context, evt es.Event) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "postgresProjection.onProfileUpdated")
 	defer span.Finish()
 	span.LogFields(log.String("AggregateID", evt.GetAggregateID()))
 
@@ -67,4 +67,64 @@ func (o *postgresProjection) onProfileUpdate(ctx context.Context, evt es.Event) 
 	}
 
 	return o.postgresRepo.Model(&models.Profile{Username: form.Username}).Updates(profile).Error
+}
+
+func (o *postgresProjection) onJobApplied(ctx context.Context, evt es.Event) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "postgresProjection.onJobApplied")
+	defer span.Finish()
+	span.LogFields(log.String("AggregateID", evt.GetAggregateID()))
+
+	var eventData events.JobAppliedEvent
+	if err := evt.GetJsonData(&eventData); err != nil {
+		tracing.TraceErr(span, err)
+		return errors.Wrap(err, "evt.GetJsonData")
+	}
+
+	application := eventData.Application
+	err := o.postgresRepo.Create(&application).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *postgresProjection) onJobSaved(ctx context.Context, evt es.Event) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "postgresProjection.onJobSaved")
+	defer span.Finish()
+	span.LogFields(log.String("AggregateID", evt.GetAggregateID()))
+
+	var eventData events.JobSavedEvent
+	if err := evt.GetJsonData(&eventData); err != nil {
+		tracing.TraceErr(span, err)
+		return errors.Wrap(err, "evt.GetJsonData")
+	}
+
+	savedjob := eventData.SavedJob
+	err := o.postgresRepo.Create(&savedjob).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *postgresProjection) onJobUnsaved(ctx context.Context, evt es.Event) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "postgresProjection.onJobUnsaved")
+	defer span.Finish()
+	span.LogFields(log.String("AggregateID", evt.GetAggregateID()))
+
+	var eventData events.JobSavedEvent
+	if err := evt.GetJsonData(&eventData); err != nil {
+		tracing.TraceErr(span, err)
+		return errors.Wrap(err, "evt.GetJsonData")
+	}
+
+	savedjob := eventData.SavedJob
+	err := o.postgresRepo.Delete(&savedjob).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

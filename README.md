@@ -10,12 +10,15 @@ This repo is Candidate Service of jobstreet application backend.
 
 ## RUN
 
-1. Run eventstoreDB
+1. Run eventstoreDB (if it's the first run)
     ```make esdb```
+or (from the second run)
+    ```make start_esdb```
 2. Run PostgresDB (if it's the first run)
     ```make run_postgres```
     ```make createdb```
-or 
-    ```docker start postgres```
+or (from the second run)
+    ```make start_postgres```
 3. Run server
     ```go run main.go```
+

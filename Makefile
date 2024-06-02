@@ -65,4 +65,7 @@ esdb:
     	eventstore/eventstore:21.6.0-buster-slim --insecure --run-projections=All \
     	--enable-external-tcp --enable-atom-pub-over-http
 
+start_esdb:
+	docker start esdb-node
+
 .PHONY: build_run_prod new_migrate run_postgres migrate dropdb createdb start_postgres sqlc evans swagger proto esdb

@@ -14,6 +14,7 @@ import (
 	"github.com/SEC-Jobstreet/backend-candidate-service/internal/candidate/service"
 	"github.com/SEC-Jobstreet/backend-candidate-service/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type candidateHandlers struct {
@@ -116,27 +117,6 @@ func (ch *candidateHandlers) CreateProfile(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, profile)
 }
-
-// type ProfileUpdateRequest struct {
-// 	FirstName    string `form:"first_name"`
-// 	LastName     string `form:"last_name"`
-// 	CountryPhone string `form:"country_phone"`
-// 	Phone        string `form:"phone"`
-// 	Address      string `form:"address"`
-// 	Latitude     string `form:"latitude"`
-// 	Longitude    string `form:"longitude"`
-// 	Visa         *bool  `form:"visa"`
-// 	Description  string `form:"description"`
-
-// 	CurrentPosition string `form:"current_position"`
-// 	StartDate       int64  `form:"start_date"`
-
-// 	WorkWhenever *bool  `form:"work_whenever"`
-// 	WorkShift    string `form:"work_shift"`
-
-// 	ShareProfile *bool                `form:"share_profile"`
-// 	Resume       multipart.FileHeader `form:"resume"`
-// }
 
 func (ch *candidateHandlers) UpdateProfile(ctx *gin.Context) {
 	var form ProfileCreationRequest
@@ -243,4 +223,216 @@ func (ch *candidateHandlers) GetProfileByEmployer(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, profileProjection)
+}
+
+type JobRequest struct {
+	JobID string `json:"job_id" binding:"required"`
+}
+
+func (ch *candidateHandlers) ApplyJob(ctx *gin.Context) {
+	currentUser, err := utils.GetCurrentUser(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	var req JobRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	jobId, err := uuid.Parse(req.JobID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	application := models.Application{
+		ID:          uuid.New(),
+		JobID:       jobId,
+		CandidateID: currentUser.Username,
+		Status:      "APPLIED", // APPLIED
+	}
+
+	command := commands.NewApplyJobCommand(currentUser.Username+"-"+req.JobID, application)
+	err = ch.cs.Commands.ApllyJob.Handle(ctx, command)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, application)
+}
+
+func (ch *candidateHandlers) SaveJob(ctx *gin.Context) {
+	currentUser, err := utils.GetCurrentUser(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	var req JobRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	jobId, err := uuid.Parse(req.JobID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	savedJob := models.SavedJob{
+		ID:          uuid.New(),
+		JobID:       jobId,
+		CandidateID: currentUser.Username,
+	}
+
+	command := commands.NewSaveJobCommand(currentUser.Username+"-"+req.JobID, savedJob)
+	err = ch.cs.Commands.SaveJob.Handle(ctx, command)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, savedJob)
+}
+
+type JobUnsavingRequest struct {
+	SavedJobID string `json:"id" binding:"required"`
+	JobID      string `json:"job_id" binding:"required"`
+}
+
+func (ch *candidateHandlers) UnsaveJob(ctx *gin.Context) {
+	currentUser, err := utils.GetCurrentUser(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	var req JobUnsavingRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	unsavedJobId, err := uuid.Parse(req.SavedJobID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	jobId, err := uuid.Parse(req.JobID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	unsavedJob := models.SavedJob{
+		ID:          unsavedJobId,
+		JobID:       jobId,
+		CandidateID: currentUser.Username,
+	}
+
+	command := commands.NewUnsaveJobCommand(currentUser.Username+"-"+req.JobID, unsavedJob)
+	err = ch.cs.Commands.UnsaveJob.Handle(ctx, command)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, unsavedJob)
+}
+
+func (ch *candidateHandlers) GetSavedJobList(ctx *gin.Context) {
+	currentUser, err := utils.GetCurrentUser(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	query := queries.NewGetSavedJobListQuery(currentUser.Username)
+
+	savedJobListProjection, err := ch.cs.Queries.GetSavedJobList.Handle(ctx, query)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"jobs": savedJobListProjection})
+}
+
+type listApplicationsRequest struct {
+	JobID    string `form:"job_id"`
+	PageID   int    `form:"page_id" binding:"required,min=1"`
+	PageSize int    `form:"page_size" binding:"required,min=10,max=20"`
+}
+
+type listApplicationsResponse struct {
+	Total        int64            `json:"total"`
+	PageID       int              `json:"page_id"`
+	PageSize     int              `json:"page_size" `
+	Applications []models.Profile `json:"applications"`
+}
+
+func (ch *candidateHandlers) GetAppliedCandidateList(ctx *gin.Context) {
+	var req listApplicationsRequest
+	err := ctx.ShouldBindQuery(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	jobid, err := uuid.Parse(req.JobID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	query := queries.NewGetAppliedCandidateListQuery(jobid, req.PageID, req.PageSize)
+
+	applicationProjection, total, err := ch.cs.Queries.GetAppliedCandidateList.Handle(ctx, query)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	res := listApplicationsResponse{
+		Total:        total,
+		PageID:       req.PageID,
+		PageSize:     req.PageSize,
+		Applications: applicationProjection,
+	}
+
+	ctx.JSON(http.StatusOK, res)
+}
+
+type JobIdURIRequest struct {
+	JobID string `uri:"job_id" binding:"required"`
+}
+
+func (ch *candidateHandlers) GetAppliedCandidateNumber(ctx *gin.Context) {
+	var req JobIdURIRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	jobid, err := uuid.Parse(req.JobID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	query := queries.NewGetAppliedCandidateNumberQuery(jobid)
+
+	applicationProjection, err := ch.cs.Queries.GetAppliedCandidateNumber.Handle(ctx, query)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"total": applicationProjection})
 }

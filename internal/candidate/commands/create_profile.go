@@ -30,17 +30,17 @@ func (c *createProfileHandler) Handle(ctx context.Context, command *CreateProfil
 	defer span.Finish()
 	span.LogFields(log.String("AggregateID", command.GetAggregateID()))
 
-	profile := aggregate.NewProfileAggregateWithID(command.AggregateID)
-	profile.Profile = &command.Profile
-	err := c.es.Exists(ctx, profile.GetID())
+	profileAggregate := aggregate.NewProfileAggregateWithID(command.AggregateID)
+	profileAggregate.Profile = &command.Profile
+	err := c.es.Exists(ctx, profileAggregate.GetID())
 	if err != nil && !errors.Is(err, esdb.ErrStreamNotFound) {
 		return err
 	}
 
-	if err := profile.CreateProfile(ctx, command.Profile); err != nil {
+	if err := profileAggregate.CreateProfile(ctx, command.Profile); err != nil {
 		return err
 	}
 
-	span.LogFields(log.String("profile", profile.String()))
-	return c.es.Save(ctx, profile)
+	span.LogFields(log.String("profile", profileAggregate.String()))
+	return c.es.Save(ctx, profileAggregate)
 }

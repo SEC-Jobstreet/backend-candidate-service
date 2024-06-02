@@ -13,22 +13,30 @@ type CandidateService struct {
 	Queries  *queries.CandidateQueries
 }
 
-func NewCandidateService(
-	config *utils.Config,
-	es es.AggregateStore,
-	db *gorm.DB,
-) *CandidateService {
-
+func NewCandidateService(config *utils.Config, es es.AggregateStore, db *gorm.DB) *CandidateService {
 	createProfileHandler := commands.NewCreateProfileHandler(config, es)
 	updateProfileHandler := commands.NewUpdateProfileHandler(config, es)
-
-	getProfileByIDHandler := queries.NewGetProfileByIDHandler(config, es, db)
-
+	applyJobHandler := commands.NewApplyJobHandler(config, es)
+	saveJobHandler := commands.NewSaveJobHandler(config, es)
+	unsaveJobHandler := commands.NewUnsaveJobHandler(config, es)
 	candidateCommands := commands.NewCandidateCommands(
 		createProfileHandler,
 		updateProfileHandler,
+		applyJobHandler,
+		saveJobHandler,
+		unsaveJobHandler,
 	)
-	candidateQueries := queries.NewCandidateQueries(getProfileByIDHandler)
+
+	getProfileByIDHandler := queries.NewGetProfileByIDHandler(config, es, db)
+	getSavedJobListHandler := queries.NewGetSavedJobListHandler(config, es, db)
+	getAppliedCandidateListHandler := queries.NewGetAppliedCandidateListHandler(config, es, db)
+	getAppliedCandidateNumberHandler := queries.NewGetAppliedCandidateNumberHandler(config, es, db)
+	candidateQueries := queries.NewCandidateQueries(
+		getProfileByIDHandler,
+		getSavedJobListHandler,
+		getAppliedCandidateListHandler,
+		getAppliedCandidateNumberHandler,
+	)
 
 	return &CandidateService{Commands: candidateCommands, Queries: candidateQueries}
 }

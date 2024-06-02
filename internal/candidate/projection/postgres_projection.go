@@ -113,11 +113,16 @@ func (o *postgresProjection) When(ctx context.Context, evt es.Event) error {
 	span.LogFields(log.String("AggregateID", evt.GetAggregateID()), log.String("EventType", evt.GetEventType()))
 
 	switch evt.GetEventType() {
-
 	case events.ProfileCreated:
-		return o.onProfileCreate(ctx, evt)
+		return o.onProfileCreated(ctx, evt)
 	case events.ProfileUpdated:
-		return o.onProfileUpdate(ctx, evt)
+		return o.onProfileUpdated(ctx, evt)
+	case events.JobApplied:
+		return o.onJobApplied(ctx, evt)
+	case events.JobSaved:
+		return o.onJobSaved(ctx, evt)
+	case events.JobUnsaved:
+		return o.onJobUnsaved(ctx, evt)
 	default:
 		o.log.Warnf("(postgresProjection) [When unknown EventType] eventType: {%s}", evt.EventType)
 		return es.ErrInvalidEventType

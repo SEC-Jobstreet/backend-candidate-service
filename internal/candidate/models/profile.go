@@ -33,8 +33,8 @@ type Profile struct {
 	CreatedAt int64 `gorm:"autoCreateTime" bson:"CreatedAt"`
 }
 
-func MigrateCandidates(db *gorm.DB) error {
-	err := db.AutoMigrate(&Profile{})
+func MigrateDB(db *gorm.DB) error {
+	err := db.AutoMigrate(&Profile{}, &Application{}, &SavedJob{})
 	return err
 }
 

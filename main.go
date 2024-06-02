@@ -56,7 +56,7 @@ func main() {
 		log.Fatal().Msg("cannot connect to db")
 	}
 
-	err = models.MigrateCandidates(store)
+	err = models.MigrateDB(store)
 	if err != nil {
 		log.Fatal().Msg("could not migrate db")
 	}
