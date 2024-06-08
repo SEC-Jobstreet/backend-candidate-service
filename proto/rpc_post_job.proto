@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package jobstreet.job;
+
+import "job.proto";
+
+option go_package = "github.com/SEC-Jobstreet/backend-job-service/pb";
+
+message PostJobRequest {
+    string title = 1;
+    optional string type = 2;
+    optional bool   work_whenever = 3;
+    optional string work_shift = 4;
+    string description = 5;
+    optional bool   visa = 6;
+    optional uint32 experience = 7;
+    optional int64  start_date = 8;
+    string currency = 9;
+    optional uint32 exact_salary = 10;
+    optional string range_salary = 11;
+    optional int64  expires_at = 12;
+
+    optional string enterprise_id = 13;
+	optional string enterprise_name = 14;
+	optional string enterprise_address = 15;
+
+    optional bool   crawl = 16;
+	optional string job_url = 17;
+	optional string job_source_name = 18;
+    
+	optional string employer_id = 19;
+    optional string employer_role = 20;
+    optional string enterprise_country = 21;
+    optional string enterprise_latitude = 22;
+    optional string enterprise_longitude = 23;
+    optional string enterprise_field = 24;
+    optional string enterprise_size = 25;
+    optional string enterprise_url = 26;
+    optional string enterprise_license = 27;
+
+    optional string salary_level_display = 28;
+    optional string paid_period = 29;
+}
+
+message PostJobResponse {
+    Job job = 1;
+}

@@ -15,31 +15,35 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"gorm.io/gorm"
 )
 
 // Server serves HTTP requests for our banking service.
 type Server struct {
-	log    logger.Logger
-	config utils.Config
-	store  *gorm.DB
-	cs     *service.CandidateService
-	media  *externals.AWSHandler
-	db     *esdb.Client
+	log            logger.Logger
+	config         utils.Config
+	store          *gorm.DB
+	cs             *service.CandidateService
+	media          *externals.AWSHandler
+	db             *esdb.Client
+	jobServiceGRPC *externals.JobServiceGRPC
 }
 
 // NewServer creates a new HTTP server and setup routing.
-func NewServer(config utils.Config, appLogger logger.Logger, db *esdb.Client, store *gorm.DB, awsHandler *externals.AWSHandler) (*Server, error) {
+func NewServer(config utils.Config, appLogger logger.Logger, db *esdb.Client, store *gorm.DB, awsHandler *externals.AWSHandler, gRPCconn *grpc.ClientConn) (*Server, error) {
 	awsHandler.Init(config)
 
 	aggregateStore := es.NewAggregateStore(appLogger, db)
+	jobServiceGRPC := externals.NewJobServiceGRPC(config.JobServiceGRPCAddress, gRPCconn)
 
 	server := &Server{
-		config: config,
-		store:  store,
-		cs:     service.NewCandidateService(&config, aggregateStore, store),
-		media:  awsHandler,
-		db:     db,
+		config:         config,
+		store:          store,
+		cs:             service.NewCandidateService(&config, aggregateStore, store, jobServiceGRPC),
+		media:          awsHandler,
+		db:             db,
+		jobServiceGRPC: jobServiceGRPC,
 	}
 
 	return server, nil

@@ -16,6 +16,8 @@ import (
 	"github.com/SEC-Jobstreet/backend-candidate-service/pkg/eventstroredb"
 	"github.com/SEC-Jobstreet/backend-candidate-service/pkg/logger"
 	"github.com/SEC-Jobstreet/backend-candidate-service/utils"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -74,12 +76,16 @@ func main() {
 	db, err := eventstroredb.NewEventStoreDB(eventstroredb.EventStoreConfig{
 		ConnectionString: config.EventStoreConnectionString,
 	})
-
 	if err != nil {
-		log.Fatal().Msg("could not migrate db")
+		log.Fatal().Msg("could not connect to eventstore db")
 	}
+	defer db.Close()
 
-	defer db.Close() // nolint: errcheck
+	transportOptions := grpc.WithTransportCredentials(insecure.NewCredentials())
+	gRPCconn, err := grpc.Dial(config.JobServiceGRPCAddress, transportOptions)
+	if err != nil {
+		log.Fatal().Msg("cannot dial grpc job server")
+	}
 
 	postgresProjection := postgres_projection.NewCandidateProjection(appLogger, db, store, &config)
 
@@ -93,7 +99,7 @@ func main() {
 
 	waitGroup, ctx := errgroup.WithContext(ctx)
 
-	runGinServer(ctx, waitGroup, appLogger, config, db, store, awsHandler)
+	runGinServer(ctx, waitGroup, appLogger, config, db, store, awsHandler, gRPCconn)
 
 	err = waitGroup.Wait()
 	if err != nil {
@@ -101,8 +107,8 @@ func main() {
 	}
 }
 
-func runGinServer(ctx context.Context, waitGroup *errgroup.Group, appLogger logger.Logger, config utils.Config, db *esdb.Client, store *gorm.DB, awsHandler *externals.AWSHandler) {
-	ginServer, err := server.NewServer(config, appLogger, db, store, awsHandler)
+func runGinServer(ctx context.Context, waitGroup *errgroup.Group, appLogger logger.Logger, config utils.Config, db *esdb.Client, store *gorm.DB, awsHandler *externals.AWSHandler, gRPCconn *grpc.ClientConn) {
+	ginServer, err := server.NewServer(config, appLogger, db, store, awsHandler, gRPCconn)
 	if err != nil {
 		log.Fatal().Msg("cannot create server")
 	}

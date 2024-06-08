@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/SEC-Jobstreet/backend-candidate-service/externals"
 	"github.com/SEC-Jobstreet/backend-candidate-service/internal/candidate/commands"
 	"github.com/SEC-Jobstreet/backend-candidate-service/internal/candidate/queries"
 	"github.com/SEC-Jobstreet/backend-candidate-service/pkg/es"
@@ -13,7 +14,7 @@ type CandidateService struct {
 	Queries  *queries.CandidateQueries
 }
 
-func NewCandidateService(config *utils.Config, es es.AggregateStore, db *gorm.DB) *CandidateService {
+func NewCandidateService(config *utils.Config, es es.AggregateStore, db *gorm.DB, jobService *externals.JobServiceGRPC) *CandidateService {
 	createProfileHandler := commands.NewCreateProfileHandler(config, es)
 	updateProfileHandler := commands.NewUpdateProfileHandler(config, es)
 	applyJobHandler := commands.NewApplyJobHandler(config, es)
@@ -28,7 +29,7 @@ func NewCandidateService(config *utils.Config, es es.AggregateStore, db *gorm.DB
 	)
 
 	getProfileByIDHandler := queries.NewGetProfileByIDHandler(config, es, db)
-	getSavedJobListHandler := queries.NewGetSavedJobListHandler(config, es, db)
+	getSavedJobListHandler := queries.NewGetSavedJobListHandler(config, es, db, jobService)
 	getAppliedCandidateListHandler := queries.NewGetAppliedCandidateListHandler(config, es, db)
 	getAppliedCandidateNumberHandler := queries.NewGetAppliedCandidateNumberHandler(config, es, db)
 	candidateQueries := queries.NewCandidateQueries(
