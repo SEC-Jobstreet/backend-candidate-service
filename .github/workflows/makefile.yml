@@ -47,7 +47,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: nguyenthuanit265/backend-employer-service:latest
+        tags: nguyenthuanit265/backend-candidate-service:latest
 
     - name: Transfer Docker image to remote server
       run: |
