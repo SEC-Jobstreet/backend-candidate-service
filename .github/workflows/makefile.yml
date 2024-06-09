@@ -66,5 +66,5 @@ jobs:
     - name: Run docker container backend-candidate-service
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }} << 'ENDSSH'
-        docker run --name backend-jobstreet-candidate-service-prod --network jobstreet-network -p 4002:4002 ${{ secrets.ENV_BACKEND_CANDIDATE_SERVICE }} -d nguyenthuanit265/backend-candidate-service:latest
+        docker run --name backend-jobstreet-candidate-service-prod --network jobstreet-network -p 4002:4002 -e ${{ secrets.ENV_BACKEND_CANDIDATE_SERVICE }} -d nguyenthuanit265/backend-candidate-service:latest
         ENDSSH
