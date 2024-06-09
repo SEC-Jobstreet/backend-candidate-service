@@ -8,10 +8,10 @@ import (
 // The value are read by viper from a config file or environment variables.
 type Config struct {
 	Environment                 string `mapstructure:"ENVIRONMENT"`
-	RESTfulServerAddress        string `mapstructure:"RESTfulServerAddress"`
-	JobServiceGRPCAddress       string `mapstructure:"JobServiceGRPCAddress"`
+	RESTfulServerAddress        string `mapstructure:"RESTFULL_SERVER_ADDRESS"`
+	JobServiceGRPCAddress       string `mapstructure:"JOB_SERVICE_GRPC_ADDRESS"`
 	DBSource                    string `mapstructure:"DB_SOURCE"`
-	EventStoreConnectionString  string `mapstructure:"EventStoreConnectionString"`
+	EventStoreConnectionString  string `mapstructure:"EVENT_STORE_CONNECTION_STRING"`
 	OAuthGoogleClientId         string `mapstructure:"OAUTH_GOOGLE_CLIENT_ID"`
 	OAuthGoogleClientSecret     string `mapstructure:"OAUTH_GOOGLE_CLIENT_SECRET"`
 	OAuthGoogleCallbackUrl      string `mapstructure:"OAUTH_GOOGLE_CALLBACK_URL"`
