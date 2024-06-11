@@ -301,8 +301,7 @@ func (ch *candidateHandlers) SaveJob(ctx *gin.Context) {
 }
 
 type JobUnsavingRequest struct {
-	SavedJobID string `json:"id" binding:"required"`
-	JobID      string `json:"job_id" binding:"required"`
+	JobID string `json:"job_id" binding:"required"`
 }
 
 func (ch *candidateHandlers) UnsaveJob(ctx *gin.Context) {
@@ -318,12 +317,6 @@ func (ch *candidateHandlers) UnsaveJob(ctx *gin.Context) {
 		return
 	}
 
-	unsavedJobId, err := uuid.Parse(req.SavedJobID)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
-		return
-	}
-
 	jobId, err := uuid.Parse(req.JobID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
@@ -331,7 +324,6 @@ func (ch *candidateHandlers) UnsaveJob(ctx *gin.Context) {
 	}
 
 	unsavedJob := models.SavedJob{
-		ID:          unsavedJobId,
 		JobID:       jobId,
 		CandidateID: currentUser.Username,
 	}

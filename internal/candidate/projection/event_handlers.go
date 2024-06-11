@@ -121,7 +121,8 @@ func (o *postgresProjection) onJobUnsaved(ctx context.Context, evt es.Event) err
 	}
 
 	savedjob := eventData.SavedJob
-	err := o.postgresRepo.Delete(&savedjob).Error
+	err := o.postgresRepo.Where("job_id = ?", eventData.SavedJob.JobID).
+		Where("candidate_id = ?", eventData.SavedJob.CandidateID).Delete(&savedjob).Error
 	if err != nil {
 		return err
 	}
