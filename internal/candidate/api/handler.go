@@ -290,7 +290,7 @@ func (ch *candidateHandlers) SaveJob(ctx *gin.Context) {
 		CandidateID: currentUser.Username,
 	}
 
-	command := commands.NewSaveJobCommand(currentUser.Username+"-"+req.JobID, savedJob)
+	command := commands.NewSaveJobCommand(savedJob.ID.String(), savedJob)
 	err = ch.cs.Commands.SaveJob.Handle(ctx, command)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err))
@@ -300,10 +300,6 @@ func (ch *candidateHandlers) SaveJob(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, savedJob)
 }
 
-type JobUnsavingRequest struct {
-	JobID string `json:"job_id" binding:"required"`
-}
-
 func (ch *candidateHandlers) UnsaveJob(ctx *gin.Context) {
 	currentUser, err := utils.GetCurrentUser(ctx)
 	if err != nil {
@@ -311,7 +307,7 @@ func (ch *candidateHandlers) UnsaveJob(ctx *gin.Context) {
 		return
 	}
 
-	var req JobUnsavingRequest
+	var req JobRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err))
 		return
@@ -328,7 +324,7 @@ func (ch *candidateHandlers) UnsaveJob(ctx *gin.Context) {
 		CandidateID: currentUser.Username,
 	}
 
-	command := commands.NewUnsaveJobCommand(currentUser.Username+"-"+req.JobID, unsavedJob)
+	command := commands.NewUnsaveJobCommand(uuid.New().String(), unsavedJob)
 	err = ch.cs.Commands.UnsaveJob.Handle(ctx, command)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err))
